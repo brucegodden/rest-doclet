@@ -27,294 +27,294 @@ import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 /**
- * 
+ *
  * @author yael
- * 
+ *
  */
 public final class RestDocConstants {
 	/**
-	 * 
+	 *
 	 */
 	public static final String DOCLET_FLAG = "-doclet";
 	/**
-	 * 
+	 *
 	 */
-	public static final String CLOUDIFY_PATH = ".." + File.separator + ".." + File.separator 
+	public static final String CLOUDIFY_PATH = ".." + File.separator + ".." + File.separator
 			+ "workspaceCloudify" + File.separator + "cloudify";
 	/**
-	 * 
+	 *
 	 */
 	public static final String SOURCE_PATH_FLAG = "-sourcepath";
 	/**
-	 * 
+	 *
 	 */
-	public static final String SOURCES_PATH = CLOUDIFY_PATH + File.separator + "restful" + File.separator + "src" 
+	public static final String SOURCES_PATH = CLOUDIFY_PATH + File.separator + "restful" + File.separator + "src"
 			+ File.separator + "main" + File.separator + "java";
 	/**
-	 * 
+	 *
 	 */
 	public static final String CONTROLLERS_PACKAGE = "org.cloudifysource.rest.controllers";
 	/**
-	 * 
+	 *
 	 */
-	public static final String DSL_RESPONSE_SOURCES_PATH = CLOUDIFY_PATH + File.separator + "dsl" 
+	public static final String DSL_RESPONSE_SOURCES_PATH = CLOUDIFY_PATH + File.separator + "dsl"
 			+ File.separator + "src" + File.separator + "main" + File.separator + "java"
-			+ File.separator + "org" + File.separator + "cloudifysource" + File.separator 
+			+ File.separator + "org" + File.separator + "cloudifysource" + File.separator
 			+ "dsl" + File.separator + "rest" + File.separator + "response";
 	/**
-	 * 
+	 *
 	 */
 	public static final String DSL_RESPONSE_PACKAGE = "org.cloudifysource.dsl.rest.response";
 	/**
-	 * 
+	 *
 	 */
 	public static final String SERVICE_CONTROLLER_CLASS_NAME = "org.cloudifysource.rest.controllers.ServiceController";
 	/**
-	 * 
+	 *
 	 */
-	public static final String ADMIN_API_CONTROLLER_CLASS_NAME = 
+	public static final String ADMIN_API_CONTROLLER_CLASS_NAME =
 			"org.cloudifysource.rest.controllers.AdminAPIController";
 	/**
-	 * 
+	 *
 	 */
 	public static final String VELOCITY_TEMPLATE_PATH_FLAG = "-velocityTemplateFilePath";
 	/**
-	 * 
+	 *
 	 */
 	public static final String VELOCITY_TEMPLATE_FILE_NAME = "restDocletVelocityTemplate.vm";
 	/**
-	 * 
+	 *
 	 */
 	public static final String VELOCITY_TEMPLATE_PATH = "src" + File.separator
 			+ "main" + File.separator + "resources" + File.separator
 			+ VELOCITY_TEMPLATE_FILE_NAME;
 	/**
-	 * 
+	 *
 	 */
 	public static final String DOC_DEST_PATH_FLAG = "-docletDestdir";
 	/**
-	 * 
+	 *
 	 */
 	public static final String DOC_DEST_PATH = "restdoclet.html";
 	/**
-	 * 
+	 *
 	 */
 	public static final String DOC_CSS_PATH_FLAG = "-docletCss";
 	/**
-	 * 
+	 *
 	 */
 	public static final String DOC_CSS_PATH = "restdoclet.css";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String VERSION_FLAG = "-restVersion";
 	/**
-	 * 
+	 *
 	 */
 	public static final String VERSION = "";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_EXAMPLE_GENERATOR_CLASS_FLAG = "-requestExample";
 	/**
-	 * 
+	 *
 	 */
 	public static final String RESPONSE_EXAMPLE_GENERATOR_CLASS_FLAG = "-responseExample";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_BODY_PARAM_FILTER_CLASS_FLAG = "-requestBodyParamFilter";
 	/**
-	 * 
+	 *
 	 */
 	public static final String CONTROLLER_ANNOTATION = "Controller";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_ANNOTATION = "RequestMapping";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_VALUE = "value";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_METHOD = "method";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_HEADERS = "headers";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_PARAMS = "params";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_PRODUCES = "produces";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_MAPPING_CONSUMED = "consumes";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_PARAMS_ANNOTATION = "RequestParam";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_PARAMS_REQUIRED = "required";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_PARAMS_VALUE = "value";
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_PARAMS_DEFAULT_VALUE = "defaultValue";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String REQUEST_BODY_ANNOTATION = "RequestBody";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String RESPONSE_BODY_ANNOTATION = "ResponseBody";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String PATH_VARIABLE_ANNOTATION = "PathVariable";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_RESPONSE_EXAMPLE_ANNOTATION = "JsonResponseExample";
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_RESPONSE_EXAMPLE_STATUS = "status";
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_RESPONSE_EXAMPLE_RESPONSE = "responseBody";
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_RESPONSE_EXAMPLE_COMMENTS = "comments";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_REQUEST_EXAMPLE_ANNOTATION = "JsonRequestExample";
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_REQUEST_EXAMPLE_REQUEST_PARAMS = "requestBody";
 	/**
-	 * 
+	 *
 	 */
 	public static final String JSON_REQUEST_EXAMPLE_COMMENTS = "comments";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String POSSIBLE_RESPONSE_STATUSES_ANNOTATION = "PossibleResponseStatuses";
 	/**
-	 * 
+	 *
 	 */
 	public static final String POSSIBLE_RESPONSE_STATUSES_RESPONSE_STATUSES = "responseStatuses";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String POSSIBLE_RESPONSE_STATUS_ANNOTATION = "PossibleResponseStatus";
 	/**
-	 * 
+	 *
 	 */
 	public static final String POSSIBLE_RESPONSE_STATUS_CODE = "code";
 	/**
-	 * 
+	 *
 	 */
 	public static final String POSSIBLE_RESPONSE_STATUS_DESCRIPTION = "description";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String INTERNAL_METHOD_ANNOTATION = "InternalMethod";
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public static final String HTTP_MATHOD_GET = "GET";
 	/**
-	 * 
+	 *
 	 */
 	public static final String HTTP_MATHOD_POST = "POST";
 	/**
-	 * 
+	 *
 	 */
 	public static final String HTTP_MATHOD_DELETE = "DELETE";
 	/**
-	 * 
+	 *
 	 */
 	public enum DocAnnotationTypes {
 		/**
-		 * 
+		 *
 		 */
-		INTERNAL_METHOD_ANNOTATION, 
+		INTERNAL_METHOD_ANNOTATION,
 		/**
-		 * 
+		 *
 		 */
-		CONTROLLER, 
+		CONTROLLER,
 		/**
-		 * 
+		 *
 		 */
-		REQUEST_MAPPING, 
+		REQUEST_MAPPING,
 		/**
-		 * 
+		 *
 		 */
-		REQUEST_PARAM, 
+		REQUEST_PARAM,
 		/**
-		 * 
+		 *
 		 */
-		REQUEST_BODY, 
+		REQUEST_BODY,
 		/**
-		 * 
+		 *
 		 */
-		RESPONSE_BODY, 
+		RESPONSE_BODY,
 		/**
-		 * 
+		 *
 		 */
-		PATH_VARIABLE, 
+		PATH_VARIABLE,
 		/**
-		 * 
+		 *
 		 */
-		JSON_RESPONSE_EXAMPLE, 
+		JSON_RESPONSE_EXAMPLE,
 		/**
-		 * 
+		 *
 		 */
-		JSON_REQUEST_EXAMPLE, 
+		JSON_REQUEST_EXAMPLE,
 		/**
-		 * 
+		 *
 		 */
-		POSSIBLE_RESPONSE_STATUS, 
+		POSSIBLE_RESPONSE_STATUS,
 		/**
-		 * 
+		 *
 		 */
-		POSSIBLE_RESPONSE_STATUSES, 
+		POSSIBLE_RESPONSE_STATUSES,
 		/**
-		 * 
+		 *
 		 */
 		DEFAULT;
 
 		/**
-		 * 
+		 *
 		 * @param annotationName .
 		 * @return The annotation type.
 		 */
@@ -348,7 +348,7 @@ public final class RestDocConstants {
 		}
 
 		/**
-		 * 
+		 *
 		 * @param name
 		 *            .
 		 * @return The class of the annotation.
@@ -382,17 +382,17 @@ public final class RestDocConstants {
 	}
 
 	/**
-	 * 
+	 *
 	 * @author yael
-	 * 
+	 *
 	 */
 	public enum ResponseCodes {
 		/**
-		 * 
+		 *
 		 */
 		OK(200, "OK"),
 		/**
-		 * 
+		 *
 		 */
 		INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
@@ -405,7 +405,7 @@ public final class RestDocConstants {
 		}
 
 		/**
-		 * 
+		 *
 		 * @param code
 		 *            .
 		 * @return The response code.
@@ -430,12 +430,12 @@ public final class RestDocConstants {
 		}
 	}
 
-	public static final String FAILED_TO_CREATE_REQUEST_EXAMPLE = 
+	public static final String FAILED_TO_CREATE_REQUEST_EXAMPLE =
 	"Failed to generate the request body example out of the request parameter type.";
-	public static final String FAILED_TO_CREATE_RESPONSE_EXAMPLE = 
+	public static final String FAILED_TO_CREATE_RESPONSE_EXAMPLE =
 	"Failed to generate the response body example out of the return value type.";
-	
+
 	private RestDocConstants() {
-		
+
 	}
 }

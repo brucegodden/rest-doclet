@@ -1,10 +1,15 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -91,6 +96,17 @@ public class ObjectCreatorTest {
     assertThat(dateClass.getDate(), not(nullValue()));
   }
 
+  @Test
+  public void canCreateAMap() throws IllegalAccessException {
+    ClassWithMap mapClass = (ClassWithMap) objectCreator_.createObject(ClassWithMap.class);
+    assertThat(mapClass.getMap(), notNullValue());
+    Iterator<Map.Entry<Long, String>> it = mapClass.getMap().entrySet().iterator();
+    assertThat(it.hasNext(), is(true));
+    Map.Entry<Long,String> entry = it.next();
+    assertThat(entry.getKey(), isA(Long.class));
+    assertThat(entry.getValue(), isA(String.class));
+  }
+
   static class EmptyClass {
     public static final EmptyClass NOTHING = new EmptyClass();
   }
@@ -156,6 +172,14 @@ public class ObjectCreatorTest {
 
     public Date getDate() {
       return date_;
+    }
+  }
+
+  public static class ClassWithMap {
+    Map<Long, String> hashMap_ = new HashMap<Long,String>();
+
+    public Map<Long, String> getMap() {
+      return hashMap_;
     }
   }
 }

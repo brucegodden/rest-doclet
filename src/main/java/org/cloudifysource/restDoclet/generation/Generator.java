@@ -535,7 +535,7 @@ public class Generator {
 			httpMethod.setJsonRequesteExample(jsonRequestExampleAnnotation);
 			requestExample = jsonRequestExampleAnnotation.generateJsonRequestBody();
 		} else {
-			requestExample = generateRequestExmple(httpMethod);
+			requestExample = generateRequestExample(httpMethod);
 		}
 		httpMethod.setRequestExample(requestExample);
 
@@ -550,7 +550,7 @@ public class Generator {
 
 	}
 
-	private static String generateRequestExmple(final DocHttpMethod httpMethod) {
+	private static String generateRequestExample(final DocHttpMethod httpMethod) {
 
 		List<DocParameter> params = httpMethod.getParams();
 		Type type = null;
@@ -566,7 +566,7 @@ public class Generator {
 		String generateExample = null;
 		try {
 			generateExample = requestExampleGenerator.generateExample(type);
-			generateExample  = Utils.getIndentJson(generateExample);
+			generateExample = Utils.getIndentJson(generateExample);
 		} catch (Exception e) {
 			logger.warning("Could not generate request example for method: " + httpMethod.getMethodSignatureName()
 					+ " with the request parameter type " + type.qualifiedTypeName()
