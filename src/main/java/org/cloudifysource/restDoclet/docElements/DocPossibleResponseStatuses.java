@@ -22,15 +22,15 @@ import org.cloudifysource.restDoclet.constants.RestDocConstants;
 
 import com.sun.javadoc.AnnotationDesc;
 
-public class DocPossibleResponseStatusesAnnotation extends DocAnnotation {
-	public DocPossibleResponseStatusesAnnotation(final AnnotationDesc annotationDesc) {
+public class DocPossibleResponseStatuses extends DocAnnotation {
+	public DocPossibleResponseStatuses(final AnnotationDesc annotationDesc) {
 		super(annotationDesc);
 	}
 
-	public List<DocPossibleResponseStatusAnnotation> getResponseStatuses() {
-    DocPossibleResponseStatusAnnotation[] attrValue = (DocPossibleResponseStatusAnnotation[])
+	public List<DocResponseStatus> getResponseStatuses() {
+    DocResponseStatus[] attrValue = (DocResponseStatus[])
             getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUSES_RESPONSE_STATUSES)
-                    .or(new DocPossibleResponseStatusesAnnotation[0]);
+                    .or(new DocPossibleResponseStatuses[0]);
 
     return Arrays.asList(attrValue);
 	}

@@ -1,27 +1,48 @@
 package org.cloudifysource.restDoclet.generation;
 
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusesAnnotation;
+import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.sun.javadoc.AnnotationDesc;
+import com.sun.javadoc.Tag;
+
 import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.*;
 
 /**
  * @author edward
  */
 public class AnnotationReader {
+  private Predicate<Tag> isResponseTag = new Predicate<Tag>() {
+    @Override
+    public boolean apply(@Nullable final Tag input) {
+      return input != null && input.name().equals("@ResponseCode");
+    }
+  };
+
+  private Function<Tag, DocResponseStatus> intoResponseDoc = new Function<Tag, DocResponseStatus>() {
+    @Override
+    public DocResponseStatus apply(final Tag input) {
+      return new DocResponseStatus(input);
+    }
+  };
+
   public AnnotationReader() {}
 
-  public RestAnnotations read(Iterable<AnnotationDesc> annotations) {
+  public RestAnnotations read(Iterable<AnnotationDesc> annotations, final Collection<Tag> tags) {
     //filter out default annotations
     final Map<RestDocConstants.DocAnnotationTypes, AnnotationDesc> annotationMap =
             new HashMap<RestDocConstants.DocAnnotationTypes, AnnotationDesc>();
@@ -55,15 +76,9 @@ public class AnnotationReader {
       }
 
       @Override
-      public DocPossibleResponseStatusAnnotation possibleResponseStatusAnnotation() {
-        AnnotationDesc annotationDesc = annotationMap.get(POSSIBLE_RESPONSE_STATUS);
-        return annotationDesc != null ? new DocPossibleResponseStatusAnnotation(annotationDesc) : null;
-      }
-
-      @Override
-      public DocPossibleResponseStatusesAnnotation possibleResponseStatusesAnnotation() {
-        AnnotationDesc annotationDesc = annotationMap.get(POSSIBLE_RESPONSE_STATUSES);
-        return annotationDesc != null ? new DocPossibleResponseStatusesAnnotation(annotationDesc) : null;
+      public Collection<DocResponseStatus> responseStatusCodes() {
+        Collection<Tag> responseTags = Collections2.filter(tags, isResponseTag);
+        return Collections2.transform(responseTags, intoResponseDoc);
       }
 
       @Override

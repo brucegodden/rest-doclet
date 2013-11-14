@@ -21,8 +21,8 @@ import java.io.File;
 import org.cloudifysource.restDoclet.docElements.DocAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusesAnnotation;
+import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatuses;
+import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
@@ -363,9 +363,9 @@ public final class RestDocConstants {
 			case JSON_RESPONSE_EXAMPLE:
 				return DocJsonResponseExample.class;
 			case POSSIBLE_RESPONSE_STATUS:
-				return DocPossibleResponseStatusAnnotation.class;
+				return DocResponseStatus.class;
 			case POSSIBLE_RESPONSE_STATUSES:
-				return DocPossibleResponseStatusesAnnotation.class;
+				return DocPossibleResponseStatuses.class;
 			case REQUEST_BODY:
 			case RESPONSE_BODY:
 			case PATH_VARIABLE:

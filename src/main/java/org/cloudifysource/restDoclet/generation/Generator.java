@@ -402,7 +402,9 @@ public class Generator {
 	private static List<DocController> generateControllers(final ClassDoc classDoc)
 			throws Exception {
 		List<DocController> controllers = new LinkedList<DocController>();
-		RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(classDoc.annotations()));
+		RestAnnotations restAnnotations = annotationReader.read(
+            Arrays.asList(classDoc.annotations()),
+            Arrays.asList(classDoc.tags()));
 
 		if (Utils.filterOutControllerClass(classDoc, restAnnotations)) {
 			return null;
@@ -444,7 +446,7 @@ public class Generator {
 
 
 		for (MethodDoc methodDoc : methods) {
-      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(methodDoc.annotations()));
+      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(methodDoc.annotations()), Arrays.asList(methodDoc.tags()));
 
 			// Does not handle methods without a RequestMapping annotation.
 			if (Utils.filterOutMethod(restAnnotations)) {
@@ -496,7 +498,7 @@ public class Generator {
 		httpMethod.setParams(generateParameters(methodDoc));
 		httpMethod.setReturnDetails(generateReturnDetails(methodDoc));
 		generateExamples(httpMethod, restAnnotations);
-		httpMethod.setPossibleResponseStatuses(restAnnotations.possibleResponseStatusesAnnotation());
+		httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
     httpMethod.setHeaders(restAnnotations.requestMappingAnnotation().headers());
 
     if (StringUtils.isBlank(httpMethod.getHttpMethodName())) {
@@ -587,7 +589,7 @@ public class Generator {
 		for (Parameter parameter : methodDoc.parameters()) {
 			String name = parameter.name();
 			DocParameter docParameter = new DocParameter(name, parameter.type());
-      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(parameter.annotations()));
+      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(parameter.annotations()), Arrays.asList(methodDoc.tags()));
       docParameter.setRequestParamAnnotation(restAnnotations.requestParamAnnotation());
       docParameter.setLocation(paramAnnotationTypeString(parameter.annotations()));
 			Map<String, String> paramTagsComments = Utils.getParamTagsComments(methodDoc);

@@ -15,9 +15,12 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  *
@@ -38,13 +41,10 @@ public class DocHttpMethod {
 
 	private DocJsonRequestExample jsonRequestExample;
 	private DocJsonResponseExample jsonResponseExample;
-	private List<DocPossibleResponseStatusAnnotation> possibleResponseStatuses;
-
 	private String requestExample;
 	private String responseExample;
-
   private Iterable<String> docHeaders;
-
+  private Collection<DocResponseStatus> responseStatuses_ = newArrayList();
 
   public DocHttpMethod(final String methodSignatureName, final String requestMethod) {
 		this.methodSignatureName = methodSignatureName;
@@ -120,8 +120,8 @@ public class DocHttpMethod {
 		this.jsonRequestExample = request;
 	}
 
-	public List<DocPossibleResponseStatusAnnotation> getPossibleResponseStatuses() {
-		return possibleResponseStatuses;
+	public Collection<DocResponseStatus> getResponseStatuses() {
+    return responseStatuses_;
 	}
 
 	public String getRequestExample() {
@@ -144,15 +144,9 @@ public class DocHttpMethod {
     docHeaders = headers;
   }
 
-	/**
-	 *
-	 * @param possibleResponseStatusesAnnotation .
-	 */
-	public void setPossibleResponseStatuses(final DocPossibleResponseStatusesAnnotation possibleResponseStatusesAnnotation) {
-		if (possibleResponseStatusesAnnotation != null) {
-			this.possibleResponseStatuses = possibleResponseStatusesAnnotation.getResponseStatuses();
-		}
-	}
+  public void setResponseStatuses(Collection<DocResponseStatus> statuses) {
+    responseStatuses_ = statuses;
+  }
 
 	@Override
 	public String toString() {
@@ -181,14 +175,6 @@ public class DocHttpMethod {
 			str.append("Response example: ").append(responseExample).append('\n');
 		}
 
-		if (possibleResponseStatuses != null) {
-			StringBuilder responseStatusStr = new StringBuilder();
-			for (DocPossibleResponseStatusAnnotation responseStatus : possibleResponseStatuses) {
-				responseStatusStr.append("* ").append(responseStatus)
-						.append("\n");
-			}
-			str.append("Returns: ").append(responseStatusStr);
-		}
 		return str.toString();
 	}
 

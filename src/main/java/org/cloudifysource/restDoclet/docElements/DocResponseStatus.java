@@ -15,26 +15,42 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import org.cloudifysource.restDoclet.constants.RestDocConstants;
-import org.cloudifysource.restDoclet.constants.RestDocConstants.ResponseCodes;
+import org.springframework.http.HttpStatus;
 
-import com.sun.javadoc.AnnotationDesc;
+import com.sun.javadoc.Tag;
 
-public class DocPossibleResponseStatusAnnotation extends DocAnnotation {
+public class DocResponseStatus {
 
-	public DocPossibleResponseStatusAnnotation(final AnnotationDesc annotationDesc) {
-		super(annotationDesc);
+  private int code = 0;
+  private String description;
+
+
+	public DocResponseStatus(final Tag responseTag) {
+    try {
+      code = Integer.parseInt(firstWord(responseTag.text()));
+      description = textAfterFirstWord(responseTag.text());
+    } catch(NumberFormatException nfe) {
+      description = responseTag.text();
+    }
 	}
 
 	public int getCode() {
-		return (Integer) getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUS_CODE).or(200);
+    return code;
 	}
 
 	public String getCodeName() {
-		return ResponseCodes.fromCode(getCode()).getReasonPhrase();
+		return HttpStatus.valueOf(code).name();
 	}
 
-	public String getDescription() {
-		return getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUS_DESCRIPTION).or("").toString();
-	}
+  public String getDescription() {
+    return description;
+  }
+
+  private String firstWord(String text) {
+    return text.contains(" ") ? text.substring(0, text.indexOf(" ")) : text;
+  }
+
+  private String textAfterFirstWord(String text) {
+    return text.contains(" ") ? text.substring(text.indexOf(" ")) : text;
+  }
 }
