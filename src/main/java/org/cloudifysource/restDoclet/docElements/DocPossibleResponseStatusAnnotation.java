@@ -18,44 +18,23 @@ package org.cloudifysource.restDoclet.docElements;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.constants.RestDocConstants.ResponseCodes;
 
-/**
- * 
- * @author yael
- *
- */
+import com.sun.javadoc.AnnotationDesc;
+
 public class DocPossibleResponseStatusAnnotation extends DocAnnotation {
 
-	private Integer code;
-	private String codeName;
-	private String description;
-
-	public DocPossibleResponseStatusAnnotation(final String name) {
-		super(name);
+	public DocPossibleResponseStatusAnnotation(final AnnotationDesc annotationDesc) {
+		super(annotationDesc);
 	}
 
 	public int getCode() {
-		return this.code;
+		return (Integer) getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUS_CODE).or(200);
 	}
 
 	public String getCodeName() {
-		return codeName;
+		return ResponseCodes.fromCode(getCode()).getReasonPhrase();
 	}
-	
+
 	public String getDescription() {
-		return this.description;
-	}
-	
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String shortAttrName = getShortName(attrName);
-		if (RestDocConstants.POSSIBLE_RESPONSE_STATUS_CODE
-				.equals(shortAttrName)) {
-			code = (Integer) attrValue;
-			codeName = ResponseCodes.fromCode(code).getReasonPhrase();
-		} else if (RestDocConstants.POSSIBLE_RESPONSE_STATUS_DESCRIPTION
-				.equals(shortAttrName)) {
-			description = (String) attrValue;
-		}
-		super.addAttribute(attrName, attrValue);
+		return getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUS_DESCRIPTION).or("").toString();
 	}
 }

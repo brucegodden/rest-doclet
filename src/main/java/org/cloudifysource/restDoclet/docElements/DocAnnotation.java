@@ -16,50 +16,97 @@
 package org.cloudifysource.restDoclet.docElements;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes;
-import org.cloudifysource.restDoclet.generation.Utils;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.AnnotationValue;
 import com.sun.tools.javadoc.AnnotationDescImpl;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * 
+ *
  * @author yael
  *
  */
 public class DocAnnotation {
-	private final String name;
-	private final Map<String, Object> attributes;
+	private final String name_;
+  private final Function<AnnotationDesc.ElementValuePair, String> annotationDescKeyFn_ = new Function<AnnotationDesc.ElementValuePair, String>() {
+    @Override
+    public String apply(final AnnotationDesc.ElementValuePair input) {
+      String name = input.element().toString();
+      int beginIndex = name.lastIndexOf('.') + 1;
+      int endIndex = name.lastIndexOf("()");
+      if (endIndex == -1) {
+        endIndex = name.length();
+      }
+      return name.substring(beginIndex, endIndex);
+    }
+  };
 
-	public DocAnnotation(final String name) {
-		this.name = name;
-		attributes = new HashMap<String, Object>();
-	}
+  private final ImmutableMap<String, AnnotationDesc.ElementValuePair> attributeMap_;
+
+  public DocAnnotation(AnnotationDesc annotationDesc) {
+    name_ = annotationDesc.annotationType() == null
+            ? annotationDesc.toString()
+            : annotationDesc.annotationType().typeName();
+
+    attributeMap_ = Maps.uniqueIndex(Arrays.asList(annotationDesc.elementValues()), annotationDescKeyFn_);
+  }
 
 	public String getName() {
-		return name;
+		return name_;
 	}
 
-	/**
-	 * 
-	 * @param name .
-	 * @return The name without . or ().
-	 */
-	protected static String getShortName(final String name) {
-		int beginIndex = name.lastIndexOf('.') + 1;
-		int endIndex = name.lastIndexOf("()");
-		if (endIndex == -1) {
-			endIndex = name.length();
-		}
-		return name.substring(beginIndex, endIndex);
-	}
+  public Optional<Object> getValue(String attributeName) {
+    AnnotationDesc.ElementValuePair value = attributeMap_.get(attributeName);
+    return value != null ? Optional.of(constructAttrValue(value.value().value())) : Optional.absent();
+  }
+
+  public Optional<String> getStringValue(String attributeName) {
+    return getStringListValue(attributeName).transform(new Function<List<String>, String>() {
+      @Nullable
+      @Override
+      public String apply(@Nullable final List<String> input) {
+        return Joiner.on(",").join(input);
+      }
+    });
+  }
+
+  public Optional<List<String>> getStringListValue(String attributeName) {
+    return getValue(attributeName).transform(new Function<Object, List<String>>() {
+      @Override
+      public List<String> apply(final Object attribute) {
+        if (attribute.getClass().isArray()) {
+          return Lists.transform(Arrays.asList((Object[]) attribute), stringValueOf_);
+        }
+        else {
+          return newArrayList(String.valueOf(attribute));
+        }
+      }
+    });
+  }
+
+  private final Function<Object, String> stringValueOf_ = new Function<Object, String>() {
+    @Nullable
+    @Override
+    public String apply(@Nullable final Object input) {
+      return String.valueOf(input);
+    }
+  };
 
 	/**
-	 * 
+	 *
 	 * @param value .
 	 * @return Construct the value.
 	 */
@@ -69,10 +116,10 @@ public class DocAnnotation {
 			Object firstValue = values[0].value();
 			Object constractedValues = null;
 			if (firstValue instanceof AnnotationDescImpl) {
-				Class<?> annotationClass = 
+				Class<?> annotationClass =
 						DocAnnotationTypes.getAnnotationClass(
 								((AnnotationDescImpl) firstValue).annotationType().typeName());
-				constractedValues = Array.newInstance(annotationClass, values.length);	
+				constractedValues = Array.newInstance(annotationClass, values.length);
 			} else {
 				constractedValues = Array.newInstance(firstValue.getClass(),
 						values.length);
@@ -82,28 +129,19 @@ public class DocAnnotation {
 				Array.set(constractedValues, i, currentValue);
 			}
 			return constractedValues;
-		} 
-		
+		}
+
 		if (value instanceof AnnotationDesc) {
-			return Utils.createNewAnnotation((AnnotationDesc) value);
+			return null;
 		}
 		return value;
 	}
 
-	/**
-	 * 
-	 * @param attrName .
-	 * @param attrValue .
-	 */
-	public void addAttribute(final String attrName, final Object attrValue) {
-		attributes.put(getShortName(attrName), attrValue);
-	}
-
 	@Override
 	public String toString() {
-		String str = "@" + name + " ";
-		if (attributes != null && attributes.size() > 0) {
-			str += attributes;
+		String str = "@" + name_ + " ";
+		if (attributeMap_ != null && attributeMap_.size() > 0) {
+			str += attributeMap_;
 		} else {
 			str += "{No attributes}";
 		}

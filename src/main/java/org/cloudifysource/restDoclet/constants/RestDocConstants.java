@@ -251,15 +251,15 @@ public final class RestDocConstants {
 	/**
 	 *
 	 */
-	public static final String HTTP_MATHOD_GET = "GET";
+	public static final String HTTP_METHOD_GET = "GET";
 	/**
 	 *
 	 */
-	public static final String HTTP_MATHOD_POST = "POST";
+	public static final String HTTP_METHOD_POST = "POST";
 	/**
 	 *
 	 */
-	public static final String HTTP_MATHOD_DELETE = "DELETE";
+	public static final String HTTP_METHOD_DELETE = "DELETE";
 	/**
 	 *
 	 */
@@ -267,7 +267,7 @@ public final class RestDocConstants {
 		/**
 		 *
 		 */
-		INTERNAL_METHOD_ANNOTATION,
+		INTERNAL_METHOD,
 		/**
 		 *
 		 */
@@ -320,7 +320,7 @@ public final class RestDocConstants {
 		 */
 		public static DocAnnotationTypes fromName(final String annotationName) {
 			if (INTERNAL_METHOD_ANNOTATION.equals(annotationName)) {
-				return INTERNAL_METHOD_ANNOTATION;
+				return INTERNAL_METHOD;
 			} else if (CONTROLLER_ANNOTATION.equals(annotationName)) {
 				return CONTROLLER;
 			} else if (REQUEST_MAPPING_ANNOTATION.equals(annotationName)) {
@@ -339,8 +339,7 @@ public final class RestDocConstants {
 				return JSON_REQUEST_EXAMPLE;
 			} else if (POSSIBLE_RESPONSE_STATUS_ANNOTATION.equals(annotationName)) {
 				return POSSIBLE_RESPONSE_STATUS;
-			} else if (POSSIBLE_RESPONSE_STATUSES_ANNOTATION
-					.endsWith(annotationName)) {
+			} else if (POSSIBLE_RESPONSE_STATUSES_ANNOTATION.endsWith(annotationName)) {
 				return POSSIBLE_RESPONSE_STATUSES;
 			} else {
 				return DEFAULT;
@@ -371,7 +370,7 @@ public final class RestDocConstants {
 			case RESPONSE_BODY:
 			case PATH_VARIABLE:
 			case CONTROLLER:
-			case INTERNAL_METHOD_ANNOTATION:
+			case INTERNAL_METHOD:
 				return DocAnnotation.class;
 			default:
 				throw new IllegalArgumentException(

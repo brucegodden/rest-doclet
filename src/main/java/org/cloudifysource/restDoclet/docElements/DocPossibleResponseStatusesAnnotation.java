@@ -15,41 +15,23 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 
-/**
- * 
- * @author yael
- *
- */
+import com.sun.javadoc.AnnotationDesc;
+
 public class DocPossibleResponseStatusesAnnotation extends DocAnnotation {
-
-	private List<DocPossibleResponseStatusAnnotation> responseStatuses;
-
-	public DocPossibleResponseStatusesAnnotation(final String name) {
-		super(name);
-		responseStatuses = new LinkedList<DocPossibleResponseStatusAnnotation>();
+	public DocPossibleResponseStatusesAnnotation(final AnnotationDesc annotationDesc) {
+		super(annotationDesc);
 	}
 
 	public List<DocPossibleResponseStatusAnnotation> getResponseStatuses() {
-		return responseStatuses;
+    DocPossibleResponseStatusAnnotation[] attrValue = (DocPossibleResponseStatusAnnotation[])
+            getValue(RestDocConstants.POSSIBLE_RESPONSE_STATUSES_RESPONSE_STATUSES)
+                    .or(new DocPossibleResponseStatusesAnnotation[0]);
+
+    return Arrays.asList(attrValue);
 	}
-
-
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String shortAttrName = getShortName(attrName);
-		if (RestDocConstants.POSSIBLE_RESPONSE_STATUSES_RESPONSE_STATUSES.equals(shortAttrName)) {
-			DocPossibleResponseStatusAnnotation[] docPossibleResponseStatusAnnotations = 
-					(DocPossibleResponseStatusAnnotation[]) attrValue;
-			for (DocPossibleResponseStatusAnnotation annotation : docPossibleResponseStatusAnnotations) {
-				this.responseStatuses.add(annotation);
-			}
-		}
-		super.addAttribute(attrName, attrValue);
-	}
-
 }

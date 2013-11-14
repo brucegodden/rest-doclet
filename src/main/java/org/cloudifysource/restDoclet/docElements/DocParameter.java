@@ -22,7 +22,7 @@ import org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTyp
 import com.sun.javadoc.Type;
 
 /**
- * 
+ *
  * @author yael
  *
  */
@@ -32,8 +32,7 @@ public class DocParameter {
 	private String description;
 	private String location;
 
-	private List<DocAnnotation> annotations;
-	private DocRequestParamAnnotation requestParamAnnotation;
+	private DocRequestParamAnnotation requestParamAnnotation_;
 	private DocAnnotation requestBodyAnnotation;
 
 	public DocParameter(final String name, final Type type) {
@@ -54,111 +53,56 @@ public class DocParameter {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param description .
 	 */
 	public void setDescription(final String description) {
 		String trimedDescription = description.trim();
 		if (description.startsWith("-")) {
 			trimedDescription = description.substring(1).trim();
-		} 
+		}
 		this.description = trimedDescription;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The value of the required attribute of the RequestParam annotation.
 	 */
-	public Boolean isRequired() {
-		if (requestParamAnnotation != null) {
-			return requestParamAnnotation.isRequierd() == null ? Boolean.FALSE
-					: requestParamAnnotation.isRequierd();
+	public boolean isRequired() {
+		if (requestParamAnnotation_ != null) {
+			return requestParamAnnotation_.isRequired();
 		}
-		return Boolean.TRUE;
-	}
-
-	public List<DocAnnotation> getAnnotations() {
-		return annotations;
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 */
-	public void setAnnotations(final List<DocAnnotation> annotations) {
-		this.annotations = annotations;
-		setAnnotationsAttributes();
+		return true;
 	}
 
 	public String getLocation() {
 		return location;
 	}
 
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
 	/**
-	 * 
+	 *
 	 * @return The value of the defaultValue attribute of the RequestParam annotation.
 	 */
 	public String getDefaultValue() {
-		if (requestParamAnnotation != null) {
-			return requestParamAnnotation.getDefaultValue();
+		if (requestParamAnnotation_ != null) {
+			return requestParamAnnotation_.getDefaultValue();
 		}
 		return null;
 	}
 
 	public DocRequestParamAnnotation getRequestParamAnnotation() {
-		return requestParamAnnotation;
+		return requestParamAnnotation_;
 	}
-	
+
 	public DocAnnotation getRequestBodyAnnotation() {
 		return requestBodyAnnotation;
 	}
 
-	private void setAnnotationsAttributes() {
-		if (annotations == null) {
-			return;
-		}
-		StringBuilder currLocation = new StringBuilder();
-		for (DocAnnotation docAnnotation : annotations) {
-			String annotationName = docAnnotation.getName();
-			if (currLocation.length() > 0) {
-				currLocation.append(" or ");
-			}
-			currLocation.append(annotationName);
-			DocAnnotationTypes docAnnotationType = DocAnnotationTypes
-					.fromName(annotationName);
-			if (docAnnotationType == DocAnnotationTypes.REQUEST_PARAM) {
-				if (!(docAnnotation instanceof DocRequestParamAnnotation)) {
-					throw new ClassCastException("Annotation type is "
-							+ DocAnnotationTypes.REQUEST_PARAM
-							+ ", expected class type to be "
-							+ DocRequestParamAnnotation.class.getName());
-				}
-				requestParamAnnotation = (DocRequestParamAnnotation) docAnnotation;
-			} else if (docAnnotationType == DocAnnotationTypes.REQUEST_BODY) {
-				requestBodyAnnotation = docAnnotation;
-			} else if (docAnnotationType != DocAnnotationTypes.PATH_VARIABLE) {
-				throw new IllegalArgumentException(
-						"Unsupported parameter annotation - " + annotationName);
-			}
-		}
-		this.location = currLocation.toString();
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder str = new StringBuilder("Parameter[");
-		if (annotations != null) {
-			if (annotations.size() == 1) {
-				str.append(annotations.get(0)).append(", ");
-			} else {
-				str.append(annotations).append(", ");
-			}
-		}
-		str.append("type = ").append(type).append(", name = ").append(name);
-		if (description != null) {
-			str.append(", description = " + description);
-		}
-		return str.append("]").toString();
-	}
-
+  public void setRequestParamAnnotation(final DocRequestParamAnnotation requestParamAnnotation) {
+    requestParamAnnotation_ = requestParamAnnotation;
+  }
 }

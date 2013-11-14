@@ -15,13 +15,12 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
- * 
+ *
  * @author yael
  *
  */
@@ -35,18 +34,19 @@ public class DocHttpMethod {
 	private DocParameter requestBodyParameter;
 	private List<DocParameter> requestParams;
 
-
 	private DocReturnDetails returnDetails;
 
 	private DocJsonRequestExample jsonRequestExample;
 	private DocJsonResponseExample jsonResponseExample;
 	private List<DocPossibleResponseStatusAnnotation> possibleResponseStatuses;
-	
+
 	private String requestExample;
 	private String responseExample;
 
+  private Iterable<String> docHeaders;
 
-	public DocHttpMethod(final String methodSignatureName, final String requestMethod) {
+
+  public DocHttpMethod(final String methodSignatureName, final String requestMethod) {
 		this.methodSignatureName = methodSignatureName;
 		this.httpMethodName = requestMethod;
 	}
@@ -58,6 +58,10 @@ public class DocHttpMethod {
 	public String getHttpMethodName() {
 		return httpMethodName;
 	}
+
+  public Iterable<String> getHeaders() {
+    return docHeaders;
+  }
 
 	public String getDescription() {
 		return description;
@@ -73,49 +77,21 @@ public class DocHttpMethod {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param params .
 	 */
 	public void setParams(final List<DocParameter> params) {
 		this.params = params;
-		setAnnotatedParams();
 	}
 
 	public List<DocParameter> getAnnotatedParams() {
-		return annotatedParams;
+		return params;
 	}
 
-	/**
-	 * 
-	 */
-	public void setAnnotatedParams() {
-		if (params == null || params.isEmpty()) {
-			return;
-		}
-		for (DocParameter docParameter : params) {
-			List<DocAnnotation> annotations = docParameter.getAnnotations();
-			if (annotations != null && !annotations.isEmpty()) {
-				if (annotatedParams == null) {
-					annotatedParams = new LinkedList<DocParameter>();
-				}
-				annotatedParams.add(docParameter);
-				if (docParameter.getRequestBodyAnnotation() != null) {
-					requestBodyParameter = docParameter;
-				}
-				if (docParameter.getRequestParamAnnotation() != null) {
-					if (requestParams == null) {
-						requestParams = new LinkedList<DocParameter>();
-					}
-					requestParams.add(docParameter);
-				}
-			}
-		}
-	}
-	
 	public DocParameter getRequestBodyParameter() {
 		return this.requestBodyParameter;
 	}
-	
+
 	public List<DocParameter> getRequestParams() {
 		return this.requestParams;
 	}
@@ -132,8 +108,7 @@ public class DocHttpMethod {
 		return jsonResponseExample;
 	}
 
-	public void setJsonResponseExample(
-			final DocJsonResponseExample jsonResponseExample) {
+	public void setJsonResponseExample(final DocJsonResponseExample jsonResponseExample) {
 		this.jsonResponseExample = jsonResponseExample;
 	}
 
@@ -141,14 +116,14 @@ public class DocHttpMethod {
 		return jsonRequestExample;
 	}
 
-	public void setJsonRequesteExample(final DocJsonRequestExample request) {
+	public void setJsonRequestExample(final DocJsonRequestExample request) {
 		this.jsonRequestExample = request;
 	}
 
 	public List<DocPossibleResponseStatusAnnotation> getPossibleResponseStatuses() {
 		return possibleResponseStatuses;
 	}
-	
+
 	public String getRequestExample() {
 		return requestExample;
 	}
@@ -165,18 +140,20 @@ public class DocHttpMethod {
 		this.responseExample = responseExample;
 	}
 
+  public void setHeaders(Iterable<String> headers) {
+    docHeaders = headers;
+  }
+
 	/**
-	 * 
+	 *
 	 * @param possibleResponseStatusesAnnotation .
 	 */
-	public void setPossibleResponseStatuses(
-			final DocPossibleResponseStatusesAnnotation possibleResponseStatusesAnnotation) {
+	public void setPossibleResponseStatuses(final DocPossibleResponseStatusesAnnotation possibleResponseStatusesAnnotation) {
 		if (possibleResponseStatusesAnnotation != null) {
-			this.possibleResponseStatuses = possibleResponseStatusesAnnotation
-					.getResponseStatuses();
+			this.possibleResponseStatuses = possibleResponseStatusesAnnotation.getResponseStatuses();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		String httpMethodShort = httpMethodName.substring(httpMethodName
