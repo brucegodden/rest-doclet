@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
+import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
@@ -16,11 +17,13 @@ import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.Tag;
 
 import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.*;
+
+import static com.google.common.collect.Collections2.filter;
+import static com.google.common.collect.Collections2.transform;
 
 /**
  * @author edward
@@ -44,8 +47,7 @@ public class AnnotationReader {
 
   public RestAnnotations read(Iterable<AnnotationDesc> annotations, final Collection<Tag> tags) {
     //filter out default annotations
-    final Map<RestDocConstants.DocAnnotationTypes, AnnotationDesc> annotationMap =
-            new HashMap<RestDocConstants.DocAnnotationTypes, AnnotationDesc>();
+    final Map<RestDocConstants.DocAnnotationTypes, AnnotationDesc> annotationMap = new HashMap<RestDocConstants.DocAnnotationTypes, AnnotationDesc>();
     for (AnnotationDesc annotation : annotations) {
       annotationMap.put(RestDocConstants.DocAnnotationTypes.fromName(annotation.annotationType().typeName()), annotation);
     }
@@ -76,9 +78,15 @@ public class AnnotationReader {
       }
 
       @Override
+      public DocJsonResponse responseBody() {
+        AnnotationDesc annotationDesc = annotationMap.get(RESPONSE_BODY);
+        return annotationDesc != null ? new DocJsonResponse(annotationDesc) : null;
+      }
+
+      @Override
       public Collection<DocResponseStatus> responseStatusCodes() {
-        Collection<Tag> responseTags = Collections2.filter(tags, isResponseTag);
-        return Collections2.transform(responseTags, intoResponseDoc);
+        Collection<Tag> responseTags = filter(tags, isResponseTag);
+        return transform(responseTags, intoResponseDoc);
       }
 
       @Override

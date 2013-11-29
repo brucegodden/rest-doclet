@@ -33,10 +33,6 @@ public class DocHttpMethod {
 	private String description;
 
 	private List<DocParameter> params;
-	private List<DocParameter> annotatedParams;
-	private DocParameter requestBodyParameter;
-	private List<DocParameter> requestParams;
-
 	private DocReturnDetails returnDetails;
 
 	private DocJsonRequestExample jsonRequestExample;
@@ -86,14 +82,6 @@ public class DocHttpMethod {
 
 	public List<DocParameter> getAnnotatedParams() {
 		return params;
-	}
-
-	public DocParameter getRequestBodyParameter() {
-		return this.requestBodyParameter;
-	}
-
-	public List<DocParameter> getRequestParams() {
-		return this.requestParams;
 	}
 
 	public DocReturnDetails getReturnDetails() {

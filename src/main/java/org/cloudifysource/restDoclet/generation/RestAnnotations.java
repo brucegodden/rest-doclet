@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
+import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatuses;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
@@ -20,6 +21,7 @@ public interface RestAnnotations {
   public DocRequestParamAnnotation requestParamAnnotation();
   public DocJsonResponseExample jsonResponseExample();
   public DocJsonRequestExample jsonRequestExample();
+  public DocJsonResponse responseBody();
   public Collection<DocResponseStatus> responseStatusCodes();
   public AnnotationDesc getAnnotation(RestDocConstants.DocAnnotationTypes type);
 }

@@ -15,10 +15,6 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.util.List;
-
-import org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes;
-
 import com.sun.javadoc.Type;
 
 /**
@@ -33,7 +29,6 @@ public class DocParameter {
 	private String location;
 
 	private DocRequestParamAnnotation requestParamAnnotation_;
-	private DocAnnotation requestBodyAnnotation;
 
 	public DocParameter(final String name, final Type type) {
 		this.name = name;
@@ -69,11 +64,8 @@ public class DocParameter {
 	 * @return The value of the required attribute of the RequestParam annotation.
 	 */
 	public boolean isRequired() {
-		if (requestParamAnnotation_ != null) {
-			return requestParamAnnotation_.isRequired();
-		}
-		return true;
-	}
+    return requestParamAnnotation_ == null || requestParamAnnotation_.isRequired();
+  }
 
 	public String getLocation() {
 		return location;
@@ -96,10 +88,6 @@ public class DocParameter {
 
 	public DocRequestParamAnnotation getRequestParamAnnotation() {
 		return requestParamAnnotation_;
-	}
-
-	public DocAnnotation getRequestBodyAnnotation() {
-		return requestBodyAnnotation;
 	}
 
   public void setRequestParamAnnotation(final DocRequestParamAnnotation requestParamAnnotation) {

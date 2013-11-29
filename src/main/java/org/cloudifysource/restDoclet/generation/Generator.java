@@ -42,10 +42,8 @@ import org.cloudifysource.restDoclet.docElements.DocMethod;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocReturnDetails;
-import org.cloudifysource.restDoclet.exampleGenerators.DefaultRequestBodyParameterFilter;
 import org.cloudifysource.restDoclet.exampleGenerators.DocDefaultExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.IDocExampleGenerator;
-import org.cloudifysource.restDoclet.exampleGenerators.IRequestBodyParamFilter;
 
 import com.google.common.base.Joiner;
 import com.sun.javadoc.AnnotationDesc;
@@ -94,8 +92,6 @@ public class Generator {
 	private static String responseExampleGeneratorName;
 	private static IDocExampleGenerator requestExampleGenerator;
 	private static IDocExampleGenerator responseExampleGenerator;
-	private static String requestBodyParamFilterName;
-	private static IRequestBodyParamFilter requestBodyParamFilter;
   private static AnnotationReader annotationReader = new AnnotationReader();
 
 
@@ -172,9 +168,6 @@ public class Generator {
 			} else if (RestDocConstants.RESPONSE_EXAMPLE_GENERATOR_CLASS_FLAG.equals(flagName)) {
 				responseExampleGeneratorName = flagValue;
 				logger.log(Level.INFO, "Updating flag " + flagName + " value = " + flagValue);
-			} else if (RestDocConstants.REQUEST_BODY_PARAM_FILTER_CLASS_FLAG.equals(flagName)) {
-				requestBodyParamFilterName = flagValue;
-				logger.log(Level.INFO, "Updating flag " + flagName + " value = " + flagValue);
 			}
 		}
 
@@ -207,29 +200,6 @@ public class Generator {
 		initResponseExampleGenerator(responseExampleGeneratorName);
 		logger.log(Level.INFO, "Updating response example generator class to "
 		+ responseExampleGenerator.getClass().getName());
-
-		initRequestBodyParamFilter();
-		logger.log(Level.INFO, "Updating request body parameter filter class to "
-		+ requestBodyParamFilter.getClass().getName());
-	}
-
-
-	private void initRequestBodyParamFilter() {
-		if (StringUtils.isBlank(requestBodyParamFilterName)) {
-			requestBodyParamFilter = new DefaultRequestBodyParameterFilter();
-		} else {
-			try {
-			Class<?> clazz = Class.forName(requestBodyParamFilterName);
-			requestBodyParamFilter = (IRequestBodyParamFilter) clazz.newInstance();
-			} catch (Exception e) {
-				logger.log(Level.WARNING,
-						"Cought " + e.getClass().getName()
-						+ " when tried to load and instantiate class "
-						+ requestBodyParamFilterName
-						+ ". Using a default filter class instead.");
-				requestBodyParamFilter = new DefaultRequestBodyParameterFilter();
-			}
-		}
 	}
 
 	private void initRequestExampleGenerator(final String exampleGeneratorName) {
@@ -512,12 +482,12 @@ public class Generator {
 	private static void generateExamples(final DocHttpMethod httpMethod, final RestAnnotations annotations)
 					throws Exception {
 		String requestExample;
-		if (annotations.jsonRequestExample() != null) {
+    if (annotations.jsonRequestExample() != null) {
 			httpMethod.setJsonRequestExample(annotations.jsonRequestExample());
 			requestExample = annotations.jsonRequestExample().generateJsonRequestBody();
 		} else {
 			requestExample = generateRequestExample(httpMethod);
-		}
+    }
 		httpMethod.setRequestExample(requestExample);
 
 		String responseExample;
@@ -525,21 +495,21 @@ public class Generator {
 			httpMethod.setJsonResponseExample(annotations.jsonResponseExample());
 			responseExample = annotations.jsonResponseExample().generateJsonResponseBody();
 		} else {
-			responseExample = generateResponseExample(httpMethod);
-		}
+      responseExample = generateResponseExample(httpMethod);
+    }
 		httpMethod.setResponseExample(responseExample);
 	}
 
 	private static String generateRequestExample(final DocHttpMethod httpMethod) {
 
 		List<DocParameter> params = httpMethod.getParams();
-		Type type = null;
-		for (DocParameter docParameter : params) {
-			if (requestBodyParamFilter.filter(httpMethod, docParameter)) {
-				type = docParameter.getType();
-				break;
-			}
-		}
+    Type type = null;
+    for (DocParameter docParameter : params) {
+      if (docParameter.getLocation().contains("RequestBody")) {
+        type = docParameter.getType();
+        break;
+      }
+    }
 		if (type == null) {
 			return REQUEST_HAS_NO_BODY_MSG;
 		}

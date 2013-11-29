@@ -37,7 +37,6 @@ public class DocJsonRequestExample extends DocAnnotation {
 	}
 
 	/**
-	 *
 	 * @return The request body in Json format.
 	 * @throws IOException .
 	 */

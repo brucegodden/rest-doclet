@@ -25,9 +25,7 @@ import com.google.common.base.Optional;
 import com.sun.javadoc.AnnotationDesc;
 
 /**
- *
  * @author yael
- *
  */
 public class DocJsonResponseExample extends DocAnnotation {
 	public DocJsonResponseExample(final AnnotationDesc annotationDesc) {
