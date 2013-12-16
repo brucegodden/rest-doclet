@@ -20,45 +20,27 @@ import java.io.IOException;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
+import com.sun.javadoc.AnnotationDesc;
+
 /**
- * 
+ *
  * @author yael
  *
  */
 public class DocJsonRequestExample extends DocAnnotation {
-
-	private String requestJsonBody;
-	private String comments;
-
-	public DocJsonRequestExample(final String name) {
-		super(name);
+	public DocJsonRequestExample(final AnnotationDesc annotationDesc) {
+		super(annotationDesc);
 	}
 
 	public String getComments() {
-		return comments;
+		return getValue(RestDocConstants.JSON_REQUEST_EXAMPLE_COMMENTS).or("no comments").toString();
 	}
 
 	/**
-	 * 
 	 * @return The request body in Json format.
 	 * @throws IOException .
 	 */
 	public String generateJsonRequestBody() throws IOException {
-		return Utils.getIndentJson(requestJsonBody);
-	}
-
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String value = attrValue.toString().trim();
-
-		String shortAttrName = getShortName(attrName);
-
-		if (RestDocConstants.JSON_REQUEST_EXAMPLE_REQUEST_PARAMS.equals(shortAttrName)) {
-			requestJsonBody = value;
-		} else if (RestDocConstants.JSON_REQUEST_EXAMPLE_COMMENTS.equals(shortAttrName)) {
-			comments = value;
-		}
-
-		super.addAttribute(shortAttrName, value);
+		return Utils.getIndentJson(String.valueOf(RestDocConstants.JSON_REQUEST_EXAMPLE_REQUEST_PARAMS));
 	}
 }

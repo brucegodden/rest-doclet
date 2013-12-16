@@ -21,60 +21,40 @@ import org.apache.commons.lang.StringUtils;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
+import com.google.common.base.Optional;
+import com.sun.javadoc.AnnotationDesc;
+
 /**
- * 
  * @author yael
- *
  */
 public class DocJsonResponseExample extends DocAnnotation {
-	private String status;
-	private String response;
-	private String comments;
+	public DocJsonResponseExample(final AnnotationDesc annotationDesc) {
+		super(annotationDesc);
+	}
 
-	public DocJsonResponseExample(final String name) {
-		super(name);
-	}
-	
 	public String getComments() {
-		return comments;
+		return getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_COMMENTS).or("").toString();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return The response body in Json format.
 	 * @throws IOException .
 	 */
 	public String generateJsonResponseBody() throws IOException {
-		String jsonResponseBody = "{\"status\": \"" + status + "\"";
-		
-		if (StringUtils.isBlank(response)) {
-			jsonResponseBody += "}";
+		String jsonResponseBody = "{\"status\": \"" + getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_STATUS) + "\"";
+
+    Optional value = getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE);
+		if (value.isPresent()) {
+      jsonResponseBody += ",\"response\": " + value.get() + "}";
+      jsonResponseBody = Utils.getIndentJson(jsonResponseBody);
 		} else {
-			jsonResponseBody += ",\"response\": " + response + "}";
-			jsonResponseBody = Utils.getIndentJson(jsonResponseBody);
+      jsonResponseBody += "}";
 		}
-		
+
 		return jsonResponseBody;
 	}
 
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String value = attrValue.toString().replace("\\\"", "\"").trim();
+//		String value = attrValue.toString().replace("\\\"", "\"").trim();
 
-//		if(value.startsWith("\"") && value.endsWith("\""))
-//			value = value.substring(1,value.length()-1);
-		
-		String shortAttrName = getShortName(attrName);
-
-		if (RestDocConstants.JSON_RESPONSE_EXAMPLE_STATUS.equals(shortAttrName)) {
-			status = value;
-		}
-		if (RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE.equals(shortAttrName)) {
-			response = value;
-		} else if (RestDocConstants.JSON_RESPONSE_EXAMPLE_COMMENTS.equals(shortAttrName)) {
-			comments = value;
-		}
-
-		super.addAttribute(shortAttrName, value);
-	}
 }

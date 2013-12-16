@@ -15,13 +15,15 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 /**
- * 
+ *
  * @author yael
  *
  */
@@ -31,22 +33,16 @@ public class DocHttpMethod {
 	private String description;
 
 	private List<DocParameter> params;
-	private List<DocParameter> annotatedParams;
-	private DocParameter requestBodyParameter;
-	private List<DocParameter> requestParams;
-
-
 	private DocReturnDetails returnDetails;
 
 	private DocJsonRequestExample jsonRequestExample;
 	private DocJsonResponseExample jsonResponseExample;
-	private List<DocPossibleResponseStatusAnnotation> possibleResponseStatuses;
-	
 	private String requestExample;
 	private String responseExample;
+  private Iterable<String> docHeaders;
+  private Collection<DocResponseStatus> responseStatuses_ = newArrayList();
 
-
-	public DocHttpMethod(final String methodSignatureName, final String requestMethod) {
+  public DocHttpMethod(final String methodSignatureName, final String requestMethod) {
 		this.methodSignatureName = methodSignatureName;
 		this.httpMethodName = requestMethod;
 	}
@@ -58,6 +54,10 @@ public class DocHttpMethod {
 	public String getHttpMethodName() {
 		return httpMethodName;
 	}
+
+  public Iterable<String> getHeaders() {
+    return docHeaders;
+  }
 
 	public String getDescription() {
 		return description;
@@ -73,51 +73,15 @@ public class DocHttpMethod {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param params .
 	 */
 	public void setParams(final List<DocParameter> params) {
 		this.params = params;
-		setAnnotatedParams();
 	}
 
 	public List<DocParameter> getAnnotatedParams() {
-		return annotatedParams;
-	}
-
-	/**
-	 * 
-	 */
-	public void setAnnotatedParams() {
-		if (params == null || params.isEmpty()) {
-			return;
-		}
-		for (DocParameter docParameter : params) {
-			List<DocAnnotation> annotations = docParameter.getAnnotations();
-			if (annotations != null && !annotations.isEmpty()) {
-				if (annotatedParams == null) {
-					annotatedParams = new LinkedList<DocParameter>();
-				}
-				annotatedParams.add(docParameter);
-				if (docParameter.getRequestBodyAnnotation() != null) {
-					requestBodyParameter = docParameter;
-				}
-				if (docParameter.getRequestParamAnnotation() != null) {
-					if (requestParams == null) {
-						requestParams = new LinkedList<DocParameter>();
-					}
-					requestParams.add(docParameter);
-				}
-			}
-		}
-	}
-	
-	public DocParameter getRequestBodyParameter() {
-		return this.requestBodyParameter;
-	}
-	
-	public List<DocParameter> getRequestParams() {
-		return this.requestParams;
+		return params;
 	}
 
 	public DocReturnDetails getReturnDetails() {
@@ -132,8 +96,7 @@ public class DocHttpMethod {
 		return jsonResponseExample;
 	}
 
-	public void setJsonResponseExample(
-			final DocJsonResponseExample jsonResponseExample) {
+	public void setJsonResponseExample(final DocJsonResponseExample jsonResponseExample) {
 		this.jsonResponseExample = jsonResponseExample;
 	}
 
@@ -141,14 +104,14 @@ public class DocHttpMethod {
 		return jsonRequestExample;
 	}
 
-	public void setJsonRequesteExample(final DocJsonRequestExample request) {
+	public void setJsonRequestExample(final DocJsonRequestExample request) {
 		this.jsonRequestExample = request;
 	}
 
-	public List<DocPossibleResponseStatusAnnotation> getPossibleResponseStatuses() {
-		return possibleResponseStatuses;
+	public Collection<DocResponseStatus> getResponseStatuses() {
+    return responseStatuses_;
 	}
-	
+
 	public String getRequestExample() {
 		return requestExample;
 	}
@@ -165,18 +128,14 @@ public class DocHttpMethod {
 		this.responseExample = responseExample;
 	}
 
-	/**
-	 * 
-	 * @param possibleResponseStatusesAnnotation .
-	 */
-	public void setPossibleResponseStatuses(
-			final DocPossibleResponseStatusesAnnotation possibleResponseStatusesAnnotation) {
-		if (possibleResponseStatusesAnnotation != null) {
-			this.possibleResponseStatuses = possibleResponseStatusesAnnotation
-					.getResponseStatuses();
-		}
-	}
-	
+  public void setHeaders(Iterable<String> headers) {
+    docHeaders = headers;
+  }
+
+  public void setResponseStatuses(Collection<DocResponseStatus> statuses) {
+    responseStatuses_ = statuses;
+  }
+
 	@Override
 	public String toString() {
 		String httpMethodShort = httpMethodName.substring(httpMethodName
@@ -204,14 +163,6 @@ public class DocHttpMethod {
 			str.append("Response example: ").append(responseExample).append('\n');
 		}
 
-		if (possibleResponseStatuses != null) {
-			StringBuilder responseStatusStr = new StringBuilder();
-			for (DocPossibleResponseStatusAnnotation responseStatus : possibleResponseStatuses) {
-				responseStatusStr.append("* ").append(responseStatus)
-						.append("\n");
-			}
-			str.append("Returns: ").append(responseStatusStr);
-		}
 		return str.toString();
 	}
 
