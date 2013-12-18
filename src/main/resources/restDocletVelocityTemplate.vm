@@ -55,7 +55,7 @@
 							</tr>
 							#foreach($docParameter in $params)
 								<tr>
-									<td>$docParameter.getType().simpleTypeName()</td>
+									<td>$docParameter.getParamClass().getSimpleName()</td>
 									#if($docParameter.getRequestParamAnnotation() && $docParameter.getRequestParamAnnotation().getValue() && !$docParameter.getRequestParamAnnotation().getValue().isEmpty())
 										<td>$docParameter.getRequestParamAnnotation().getValue()</td>
 									#else

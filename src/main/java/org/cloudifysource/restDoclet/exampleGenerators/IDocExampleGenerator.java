@@ -15,21 +15,19 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.exampleGenerators;
 
-import com.sun.javadoc.Type;
-
 /**
- * 
+ *
  * @author yael
  * @since 0.5.0
  */
 public interface IDocExampleGenerator {
-	
+
 	/**
 	 * Creates an example of a request or a response for documentation of a certain REST method.
-	 * @param type
-	 * 			The type for which the example is generated.			
-	 * @return An example for the type. 
-	 * @throws Exception . 
+	 * @param clazz
+	 * 			The type for which the example is generated.
+	 * @return An example for the type.
+	 * @throws Exception .
 	 */
-	String generateExample(Type type) throws Exception;
+	String generateExample(Class clazz) throws Exception;
 }

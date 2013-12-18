@@ -27,13 +27,23 @@ import com.sun.javadoc.AnnotationDesc;
 /**
  * @author yael
  */
-public class DocJsonResponseExample extends DocAnnotation {
-	public DocJsonResponseExample(final AnnotationDesc annotationDesc) {
-		super(annotationDesc);
+public class DocJsonResponseExample{
+  public static final DocJsonResponseExample EMPTY = new DocJsonResponseExample("", "") {
+    public String generateJsonResponseBody() throws IOException {
+      return "response has no body";
+    }
+  };
+
+  private String example_;
+  private String comments_;
+
+	public DocJsonResponseExample(String example, String comments) {
+		example_ = example;
+    comments_ = comments;
 	}
 
 	public String getComments() {
-		return getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_COMMENTS).or("").toString();
+    return comments_;
 	}
 
 	/**
@@ -42,19 +52,6 @@ public class DocJsonResponseExample extends DocAnnotation {
 	 * @throws IOException .
 	 */
 	public String generateJsonResponseBody() throws IOException {
-		String jsonResponseBody = "{\"status\": \"" + getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_STATUS) + "\"";
-
-    Optional value = getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE);
-		if (value.isPresent()) {
-      jsonResponseBody += ",\"response\": " + value.get() + "}";
-      jsonResponseBody = Utils.getIndentJson(jsonResponseBody);
-		} else {
-      jsonResponseBody += "}";
-		}
-
-		return jsonResponseBody;
+		return example_;
 	}
-
-//		String value = attrValue.toString().replace("\\\"", "\"").trim();
-
 }

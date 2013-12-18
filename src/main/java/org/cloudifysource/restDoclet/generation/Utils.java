@@ -69,21 +69,6 @@ public final class Utils {
 
 	/**
 	 *
-	 * @param methodDoc .
-	 * @return The parameters' comments.
-	 */
-	protected static Map<String, String> getParamTagsComments(
-			final MethodDoc methodDoc) {
-		Map<String, String> paramComments = new HashMap<String, String>();
-		for (ParamTag paramTag : methodDoc.paramTags()) {
-			paramComments.put(paramTag.parameterName(),
-					paramTag.parameterComment());
-		}
-		return paramComments;
-	}
-
-	/**
-	 *
 	 * @param classDoc .
 	 * @param annotations .
 	 * @return true if the class should be filtered out, false otherwise.
@@ -94,17 +79,6 @@ public final class Utils {
 				|| RestDocConstants.ADMIN_API_CONTROLLER_CLASS_NAME.equals(name));
 		// return
 		// !(classDoc.qualifiedTypeName().equals(RestDocConstants.SERVICE_CONTROLLER_CLASS_NAME));
-	}
-
-
-	/**
-	 *
-	 * @param annotations .
-	 * @return true if the method should be filtered out, false otherwise.
-	 */
-	protected static boolean filterOutMethod(final RestAnnotations annotations) {
-		return annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.INTERNAL_METHOD) != null
-				|| annotations.requestMappingAnnotation() == null;
 	}
 
 	@SuppressWarnings("unused")
