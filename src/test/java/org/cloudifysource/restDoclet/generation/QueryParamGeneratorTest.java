@@ -2,6 +2,7 @@ package org.cloudifysource.restDoclet.generation;
 
 import java.beans.IntrospectionException;
 import java.util.List;
+import java.util.Set;
 
 import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.junit.Test;
@@ -54,9 +55,21 @@ public class QueryParamGeneratorTest {
     assertThat(params, hasSize(1));
   }
 
+  @Test
+  public void setParamsGenerated() throws IntrospectionException, ClassNotFoundException {
+    QueryParamGenerator gen = new QueryParamGenerator();
+    Parameter set = setParam();
+
+    List<DocParameter> params = gen.createParamList(set);
+    assertThat(params, hasSize(1));
+  }
+
+  private Parameter setParam() {
+    return mockParam(false, Set.class.getName());
+  }
+
   private Parameter listParam() {
-    Parameter list = mockParam(false, List.class.getName());
-    return list;
+    return mockParam(false, List.class.getName());
   }
 
   private Parameter beanParam() {

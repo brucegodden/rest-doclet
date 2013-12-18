@@ -7,6 +7,7 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
@@ -45,6 +46,9 @@ public class QueryParamGenerator {
     }
     else if (List.class.getName().equals(type.qualifiedTypeName())) {
       parameters.add(new DocParameter(parameter.name(), List.class, "RequestParam"));
+    }
+    else if (Set.class.getName().equals(type.qualifiedTypeName())) {
+      parameters.add(new DocParameter(parameter.name(), Set.class, "RequestParam"));
     }
     else {
       BeanInfo info = Introspector.getBeanInfo(Class.forName(type.qualifiedTypeName()), Object.class);

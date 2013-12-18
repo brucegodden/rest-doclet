@@ -100,8 +100,6 @@ public class Generator {
 	private static IDocExampleGenerator responseExampleGenerator;
   private static AnnotationReader annotationReader = new AnnotationReader();
 
-
-
 	/**
 	 *
 	 * @param rootDoc
@@ -557,9 +555,7 @@ public class Generator {
       Class<?> clazz = ClassUtils.getClass(parameter.type().qualifiedTypeName());
       String location = paramAnnotationTypeString(parameter.annotations());
       DocParameter docParameter = new DocParameter(name, clazz, location);
-      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(parameter.annotations()), Arrays.asList(methodDoc.tags()));
-      if (restAnnotations.requestParamAnnotation().isPresent()) {
-        System.err.println("QP: "  + restAnnotations.requestParamAnnotation());
+      if (location == null || location.isEmpty()) {
         paramsList.addAll(generateQueryParameters(parameter));
       }
       else {
@@ -611,6 +607,4 @@ public class Generator {
     }
     return Joiner.on(",").join(types);
   }
-
-
 }
