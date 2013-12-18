@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
+import org.cloudifysource.restDoclet.docElements.DocAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
@@ -16,6 +17,7 @@ import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.Tag;
@@ -54,33 +56,51 @@ public class AnnotationReader {
 
     return new RestAnnotations() {
       @Override
-      public DocRequestMappingAnnotation requestMappingAnnotation() {
+      public Optional<DocRequestMappingAnnotation> requestMappingAnnotation() {
         AnnotationDesc annotationDesc = annotationMap.get(REQUEST_MAPPING);
-        return  annotationDesc != null ? new DocRequestMappingAnnotation(annotationDesc) : null;
+        return  annotationDesc != null
+                ? Optional.of(new DocRequestMappingAnnotation(annotationDesc))
+                : Optional.<DocRequestMappingAnnotation>absent();
       }
 
       @Override
-      public DocRequestParamAnnotation requestParamAnnotation() {
+      public Optional<DocRequestParamAnnotation> requestParamAnnotation() {
         AnnotationDesc annotationDesc = annotationMap.get(REQUEST_PARAM);
-        return annotationDesc != null ? new DocRequestParamAnnotation(annotationDesc) : null;
+        return annotationDesc != null
+                ? Optional.of(new DocRequestParamAnnotation(annotationDesc))
+                : Optional.<DocRequestParamAnnotation>absent();
       }
 
       @Override
-      public DocJsonResponseExample jsonResponseExample() {
+      public Optional<DocJsonResponseExample> jsonResponseExample() {
         AnnotationDesc annotationDesc = annotationMap.get(JSON_RESPONSE_EXAMPLE);
-        return annotationDesc != null ? new DocJsonResponseExample(annotationDesc) : null;
+        if (annotationDesc != null) {
+          Optional<String> value = new DocAnnotation(annotationDesc).getStringValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE);
+          if (value.isPresent()) {
+            return Optional.of(new DocJsonResponseExample(value.get(), ""));
+          }
+        }
+        return Optional.absent();
       }
 
       @Override
-      public DocJsonRequestExample jsonRequestExample() {
+      public Optional<DocJsonRequestExample> jsonRequestExample() {
         AnnotationDesc annotationDesc = annotationMap.get(JSON_REQUEST_EXAMPLE);
-        return annotationDesc != null ? new DocJsonRequestExample(annotationDesc) : null;
+        if (annotationDesc != null) {
+          Optional<String> value = new DocAnnotation(annotationDesc).getStringValue(RestDocConstants.JSON_REQUEST_EXAMPLE_REQUEST_PARAMS);
+          if (value.isPresent()) {
+            return Optional.of(new DocJsonRequestExample(value.get(), ""));
+          }
+        }
+        return Optional.absent();
       }
 
       @Override
-      public DocJsonResponse responseBody() {
+      public Optional<DocJsonResponse> responseBody() {
         AnnotationDesc annotationDesc = annotationMap.get(RESPONSE_BODY);
-        return annotationDesc != null ? new DocJsonResponse(annotationDesc) : null;
+        return annotationDesc != null
+                ? Optional.of(new DocJsonResponse(annotationDesc))
+                : Optional.<DocJsonResponse>absent();
       }
 
       @Override

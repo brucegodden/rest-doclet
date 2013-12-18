@@ -33,8 +33,7 @@ public class DocDefaultExampleGenerator implements
 
   private ObjectCreator objectCreator_ = new ObjectCreator();
 
-	private String generateJSON(final Type type) throws Exception {
-		Class<?> clazz = ClassUtils.getClass(type.qualifiedTypeName());
+	private String generateJSON(final Class clazz) throws Exception {
 		if (MultipartFile.class.getName().equals(clazz.getName())) {
 			return "\"file content\"";
 		}
@@ -46,7 +45,7 @@ public class DocDefaultExampleGenerator implements
 	}
 
   @Override
-	public String generateExample(final Type type) throws Exception {
-		return generateJSON(type);
+	public String generateExample(final Class clazz) throws Exception {
+		return generateJSON(clazz);
 	}
 }

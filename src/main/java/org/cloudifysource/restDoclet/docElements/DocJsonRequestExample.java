@@ -27,13 +27,22 @@ import com.sun.javadoc.AnnotationDesc;
  * @author yael
  *
  */
-public class DocJsonRequestExample extends DocAnnotation {
-	public DocJsonRequestExample(final AnnotationDesc annotationDesc) {
-		super(annotationDesc);
-	}
+public class DocJsonRequestExample  {
+  private String jsonString_;
+  private String comments_;
 
+  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("", "") {
+    public String generateJsonRequestBody() throws IOException {
+      return "request has no body";
+    }
+  };
+
+  public DocJsonRequestExample(String example, String comments) {
+    jsonString_ = example;
+    comments_ = comments;
+  }
 	public String getComments() {
-		return getValue(RestDocConstants.JSON_REQUEST_EXAMPLE_COMMENTS).or("no comments").toString();
+		return comments_;
 	}
 
 	/**
@@ -41,6 +50,6 @@ public class DocJsonRequestExample extends DocAnnotation {
 	 * @throws IOException .
 	 */
 	public String generateJsonRequestBody() throws IOException {
-		return Utils.getIndentJson(String.valueOf(RestDocConstants.JSON_REQUEST_EXAMPLE_REQUEST_PARAMS));
+		return Utils.getIndentJson(jsonString_);
 	}
 }

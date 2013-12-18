@@ -15,36 +15,35 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import com.sun.javadoc.Type;
-
 /**
  *
  * @author yael
  *
  */
 public class DocParameter {
-	private final Type type;
-	private final String name;
-	private String description;
-	private String location;
+	private final String name_;
+  private final Class clazz_;
+  private final String location_;
 
 	private DocRequestParamAnnotation requestParamAnnotation_;
+  private String description_;
 
-	public DocParameter(final String name, final Type type) {
-		this.name = name;
-		this.type = type;
-	}
-
-	public Type getType() {
-		return type;
+  public DocParameter(final String name, final Class clazz, String location) {
+		name_ = name;
+    clazz_ = clazz;
+    location_ = location;
 	}
 
 	public String getName() {
-		return name;
+		return name_;
 	}
 
+  public Class getParamClass() {
+    return clazz_;
+  }
+
 	public String getDescription() {
-		return description;
+		return description_;
 	}
 
 	/**
@@ -56,7 +55,7 @@ public class DocParameter {
 		if (description.startsWith("-")) {
 			trimedDescription = description.substring(1).trim();
 		}
-		this.description = trimedDescription;
+		description_ = trimedDescription;
 	}
 
 	/**
@@ -68,12 +67,8 @@ public class DocParameter {
   }
 
 	public String getLocation() {
-		return location;
+		return location_;
 	}
-
-  public void setLocation(String location) {
-    this.location = location;
-  }
 
 	/**
 	 *
@@ -85,12 +80,4 @@ public class DocParameter {
 		}
 		return null;
 	}
-
-	public DocRequestParamAnnotation getRequestParamAnnotation() {
-		return requestParamAnnotation_;
-	}
-
-  public void setRequestParamAnnotation(final DocRequestParamAnnotation requestParamAnnotation) {
-    requestParamAnnotation_ = requestParamAnnotation;
-  }
 }
