@@ -44,7 +44,6 @@ public class DocJsonResponseExample{
 
 	public String getComments() {
     return comments_;
-//		return getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_COMMENTS).or("").toString();
 	}
 
 	/**
@@ -53,19 +52,6 @@ public class DocJsonResponseExample{
 	 * @throws IOException .
 	 */
 	public String generateJsonResponseBody() throws IOException {
-//		String jsonResponseBody = "{\"status\": \"" + getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_STATUS) + "\"";
-//
-//    Optional value = getValue(RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE);
-//		if (value.isPresent()) {
-//      jsonResponseBody += ",\"response\": " + value.get() + "}";
-//      jsonResponseBody = Utils.getIndentJson(jsonResponseBody);
-//		} else {
-//      jsonResponseBody += "}";
-//		}
-
 		return example_;
 	}
-
-//		String value = attrValue.toString().replace("\\\"", "\"").trim();
-
 }
