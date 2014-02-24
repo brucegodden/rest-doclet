@@ -30,12 +30,7 @@ import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocController;
 import org.cloudifysource.restDoclet.docElements.DocHttpMethod;
-import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
-import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocMethod;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatusesAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -43,76 +38,23 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.sun.javadoc.AnnotationDesc;
-import com.sun.javadoc.AnnotationDesc.ElementValuePair;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.ParamTag;
 
 /**
- * 
+ *
  * @author yael
  *
  */
 public final class Utils {
-
 	/**
-	 * 
-	 * @param annotationDesc .
-	 * @return The created annotation.
-	 */
-	public static DocAnnotation createNewAnnotation(
-			final AnnotationDesc annotationDesc) {
-		DocAnnotation docAnnotation = null;
-		String name = null;
-		try {
-		name = annotationDesc.annotationType().typeName();
-		} catch (Exception e) {
-			String fullName = annotationDesc.toString();
-			name = fullName.substring(1);
-		}
-		switch (RestDocConstants.DocAnnotationTypes.fromName(name)) {
-		case REQUEST_MAPPING:
-			docAnnotation = new DocRequestMappingAnnotation(name);
-			break;
-		case REQUEST_PARAM:
-			docAnnotation = new DocRequestParamAnnotation(name);
-			break;
-		case JSON_RESPONSE_EXAMPLE:
-			docAnnotation = new DocJsonResponseExample(name);
-			break;
-		case JSON_REQUEST_EXAMPLE:
-			docAnnotation = new DocJsonRequestExample(name);
-			break;
-		case POSSIBLE_RESPONSE_STATUS:
-			docAnnotation = new DocPossibleResponseStatusAnnotation(name);
-			break;
-		case POSSIBLE_RESPONSE_STATUSES:
-			docAnnotation = new DocPossibleResponseStatusesAnnotation(name);
-			break;
-		case CONTROLLER:
-		default:
-			docAnnotation = new DocAnnotation(name);
-		}
-
-		// add annotation's attributes
-		for (ElementValuePair elementValuePair : annotationDesc.elementValues()) {
-			String element = elementValuePair.element().toString();
-			Object constractAttrValue = DocAnnotation
-					.constructAttrValue(elementValuePair.value().value());
-			docAnnotation.addAttribute(element, constractAttrValue);
-		}
-		return docAnnotation;
-	}
-
-	/**
-	 * 
+	 *
 	 * @param annotations .
 	 * @param annotationName .
 	 * @return The annotation.
 	 */
-	protected static DocAnnotation getAnnotation(
-			final List<DocAnnotation> annotations, final String annotationName) {
+	protected static DocAnnotation getAnnotation(final Iterable<DocAnnotation> annotations, final String annotationName) {
 		DocAnnotation requestedAnnotation = null;
 		if (annotations != null) {
 			for (DocAnnotation annotation : annotations) {
@@ -126,120 +68,19 @@ public final class Utils {
 	}
 
 	/**
-	 * 
-	 * @param annotations .
-	 * @return The 
-	 */
-	protected static DocRequestParamAnnotation getRequestParamAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocRequestParamAnnotation) getAnnotation(annotations,
-				RestDocConstants.REQUEST_PARAMS_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 * @return The RequestMapping annotation. 
-	 * null if the annotations list doesn't contain a RequestMapping annotation.
-	 */
-	protected static DocRequestMappingAnnotation getRequestMappingAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocRequestMappingAnnotation) getAnnotation(annotations,
-				RestDocConstants.REQUEST_MAPPING_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 * @return The JsonResponseExample annotation. 
-	 * null if the annotations list doesn't contain a RequestMapping annotation.
-	 */
-	protected static DocJsonResponseExample getJsonResponseExampleAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocJsonResponseExample) getAnnotation(annotations,
-				RestDocConstants.JSON_RESPONSE_EXAMPLE_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 * @return The JsonRequestExample annotation. 
-	 * null if the annotations list doesn't contain a RequestMapping annotation.
-	 */
-	protected static DocJsonRequestExample getJsonRequestExampleAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocJsonRequestExample) getAnnotation(annotations,
-				RestDocConstants.JSON_REQUEST_EXAMPLE_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 * @return The PossibleResponseStatus annotation. 
-	 * null if the annotations list doesn't contain a RequestMapping annotation.
-	 */
-	protected static DocPossibleResponseStatusAnnotation getPossibleResponseStatusAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocPossibleResponseStatusAnnotation) getAnnotation(annotations,
-				RestDocConstants.POSSIBLE_RESPONSE_STATUS_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 * @return The PossibleResponseStatuses annotation. 
-	 * null if the annotations list doesn't contain a RequestMapping annotation.
-	 */
-	protected static DocPossibleResponseStatusesAnnotation getPossibleResponseStatusesAnnotation(
-			final List<DocAnnotation> annotations) {
-		return (DocPossibleResponseStatusesAnnotation) getAnnotation(
-				annotations,
-				RestDocConstants.POSSIBLE_RESPONSE_STATUSES_ANNOTATION);
-	}
-
-	/**
-	 * 
-	 * @param methodDoc .
-	 * @return The parameters' comments.
-	 */
-	protected static Map<String, String> getParamTagsComments(
-			final MethodDoc methodDoc) {
-		Map<String, String> paramComments = new HashMap<String, String>();
-		for (ParamTag paramTag : methodDoc.paramTags()) {
-			paramComments.put(paramTag.parameterName(),
-					paramTag.parameterComment());
-		}
-		return paramComments;
-	}
-
-	/**
-	 * 
+	 *
 	 * @param classDoc .
 	 * @param annotations .
 	 * @return true if the class should be filtered out, false otherwise.
 	 */
-	protected static boolean filterOutControllerClass(final ClassDoc classDoc,
-			final List<DocAnnotation> annotations) {
-		String name = classDoc.qualifiedTypeName();
-		return (Utils.getAnnotation(annotations,
-				RestDocConstants.CONTROLLER_ANNOTATION) == null 
+	protected static boolean filterOutControllerClass(final ClassDoc classDoc, final RestAnnotations annotations) {
+    String name = classDoc.qualifiedTypeName();
+		return (annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.CONTROLLER) == null
 				|| RestDocConstants.ADMIN_API_CONTROLLER_CLASS_NAME.equals(name));
 		// return
 		// !(classDoc.qualifiedTypeName().equals(RestDocConstants.SERVICE_CONTROLLER_CLASS_NAME));
 	}
 
-	/**
-	 * 
-	 * @param methodDoc .
-	 * @param annotations .
-	 * @return true if the method should be filtered out, false otherwise.
-	 */
-	protected static boolean filterOutMethod(final MethodDoc methodDoc,
-			final List<DocAnnotation> annotations) {
-		return (getAnnotation(annotations, RestDocConstants.INTERNAL_METHOD_ANNOTATION) != null 
-				|| getAnnotation(annotations, RestDocConstants.REQUEST_MAPPING_ANNOTATION) == null);
-	}
-	
 	@SuppressWarnings("unused")
 	private static void printMethodsToFile(final List<DocController> controllers,
 			final String fileName) throws IOException {
@@ -273,7 +114,7 @@ public final class Utils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param body .
 	 * @return The body in Json format.
 	 * @throws IOException .
@@ -316,6 +157,6 @@ public final class Utils {
 	}
 
 	private Utils() {
-		
+
 	}
 }

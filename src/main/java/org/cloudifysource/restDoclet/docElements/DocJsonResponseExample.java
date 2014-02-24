@@ -21,60 +21,37 @@ import org.apache.commons.lang.StringUtils;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
-/**
- * 
- * @author yael
- *
- */
-public class DocJsonResponseExample extends DocAnnotation {
-	private String status;
-	private String response;
-	private String comments;
+import com.google.common.base.Optional;
+import com.sun.javadoc.AnnotationDesc;
 
-	public DocJsonResponseExample(final String name) {
-		super(name);
+/**
+ * @author yael
+ */
+public class DocJsonResponseExample{
+  public static final DocJsonResponseExample EMPTY = new DocJsonResponseExample("", "") {
+    public String generateJsonResponseBody() throws IOException {
+      return "response has no body";
+    }
+  };
+
+  private String example_;
+  private String comments_;
+
+	public DocJsonResponseExample(String example, String comments) {
+		example_ = example;
+    comments_ = comments;
 	}
-	
+
 	public String getComments() {
-		return comments;
+    return comments_;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return The response body in Json format.
 	 * @throws IOException .
 	 */
 	public String generateJsonResponseBody() throws IOException {
-		String jsonResponseBody = "{\"status\": \"" + status + "\"";
-		
-		if (StringUtils.isBlank(response)) {
-			jsonResponseBody += "}";
-		} else {
-			jsonResponseBody += ",\"response\": " + response + "}";
-			jsonResponseBody = Utils.getIndentJson(jsonResponseBody);
-		}
-		
-		return jsonResponseBody;
-	}
-
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String value = attrValue.toString().replace("\\\"", "\"").trim();
-
-//		if(value.startsWith("\"") && value.endsWith("\""))
-//			value = value.substring(1,value.length()-1);
-		
-		String shortAttrName = getShortName(attrName);
-
-		if (RestDocConstants.JSON_RESPONSE_EXAMPLE_STATUS.equals(shortAttrName)) {
-			status = value;
-		}
-		if (RestDocConstants.JSON_RESPONSE_EXAMPLE_RESPONSE.equals(shortAttrName)) {
-			response = value;
-		} else if (RestDocConstants.JSON_RESPONSE_EXAMPLE_COMMENTS.equals(shortAttrName)) {
-			comments = value;
-		}
-
-		super.addAttribute(shortAttrName, value);
+		return example_;
 	}
 }

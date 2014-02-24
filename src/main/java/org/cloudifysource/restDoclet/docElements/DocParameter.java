@@ -15,150 +15,69 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.util.List;
-
-import org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes;
-
-import com.sun.javadoc.Type;
-
 /**
- * 
+ *
  * @author yael
  *
  */
 public class DocParameter {
-	private final Type type;
-	private final String name;
-	private String description;
-	private String location;
+	private final String name_;
+  private final Class clazz_;
+  private final String location_;
 
-	private List<DocAnnotation> annotations;
-	private DocRequestParamAnnotation requestParamAnnotation;
-	private DocAnnotation requestBodyAnnotation;
+	private DocRequestParamAnnotation requestParamAnnotation_;
+  private String description_;
 
-	public DocParameter(final String name, final Type type) {
-		this.name = name;
-		this.type = type;
-	}
-
-	public Type getType() {
-		return type;
+  public DocParameter(final String name, final Class clazz, String location) {
+		name_ = name;
+    clazz_ = clazz;
+    location_ = location;
 	}
 
 	public String getName() {
-		return name;
+		return name_;
 	}
 
+  public Class getParamClass() {
+    return clazz_;
+  }
+
 	public String getDescription() {
-		return description;
+		return description_;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param description .
 	 */
 	public void setDescription(final String description) {
 		String trimedDescription = description.trim();
 		if (description.startsWith("-")) {
 			trimedDescription = description.substring(1).trim();
-		} 
-		this.description = trimedDescription;
+		}
+		description_ = trimedDescription;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The value of the required attribute of the RequestParam annotation.
 	 */
-	public Boolean isRequired() {
-		if (requestParamAnnotation != null) {
-			return requestParamAnnotation.isRequierd() == null ? Boolean.FALSE
-					: requestParamAnnotation.isRequierd();
-		}
-		return Boolean.TRUE;
-	}
-
-	public List<DocAnnotation> getAnnotations() {
-		return annotations;
-	}
-
-	/**
-	 * 
-	 * @param annotations .
-	 */
-	public void setAnnotations(final List<DocAnnotation> annotations) {
-		this.annotations = annotations;
-		setAnnotationsAttributes();
-	}
+	public boolean isRequired() {
+    return requestParamAnnotation_ == null || requestParamAnnotation_.isRequired();
+  }
 
 	public String getLocation() {
-		return location;
+		return location_;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The value of the defaultValue attribute of the RequestParam annotation.
 	 */
 	public String getDefaultValue() {
-		if (requestParamAnnotation != null) {
-			return requestParamAnnotation.getDefaultValue();
+		if (requestParamAnnotation_ != null) {
+			return requestParamAnnotation_.getDefaultValue();
 		}
 		return null;
 	}
-
-	public DocRequestParamAnnotation getRequestParamAnnotation() {
-		return requestParamAnnotation;
-	}
-	
-	public DocAnnotation getRequestBodyAnnotation() {
-		return requestBodyAnnotation;
-	}
-
-	private void setAnnotationsAttributes() {
-		if (annotations == null) {
-			return;
-		}
-		StringBuilder currLocation = new StringBuilder();
-		for (DocAnnotation docAnnotation : annotations) {
-			String annotationName = docAnnotation.getName();
-			if (currLocation.length() > 0) {
-				currLocation.append(" or ");
-			}
-			currLocation.append(annotationName);
-			DocAnnotationTypes docAnnotationType = DocAnnotationTypes
-					.fromName(annotationName);
-			if (docAnnotationType == DocAnnotationTypes.REQUEST_PARAM) {
-				if (!(docAnnotation instanceof DocRequestParamAnnotation)) {
-					throw new ClassCastException("Annotation type is "
-							+ DocAnnotationTypes.REQUEST_PARAM
-							+ ", expected class type to be "
-							+ DocRequestParamAnnotation.class.getName());
-				}
-				requestParamAnnotation = (DocRequestParamAnnotation) docAnnotation;
-			} else if (docAnnotationType == DocAnnotationTypes.REQUEST_BODY) {
-				requestBodyAnnotation = docAnnotation;
-			} else if (docAnnotationType != DocAnnotationTypes.PATH_VARIABLE) {
-				throw new IllegalArgumentException(
-						"Unsupported parameter annotation - " + annotationName);
-			}
-		}
-		this.location = currLocation.toString();
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder str = new StringBuilder("Parameter[");
-		if (annotations != null) {
-			if (annotations.size() == 1) {
-				str.append(annotations.get(0)).append(", ");
-			} else {
-				str.append(annotations).append(", ");
-			}
-		}
-		str.append("type = ").append(type).append(", name = ").append(name);
-		if (description != null) {
-			str.append(", description = " + description);
-		}
-		return str.append("]").toString();
-	}
-
 }

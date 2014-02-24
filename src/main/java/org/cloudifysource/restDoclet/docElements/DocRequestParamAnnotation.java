@@ -17,48 +17,28 @@ package org.cloudifysource.restDoclet.docElements;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 
+import com.sun.javadoc.AnnotationDesc;
+
 /**
- * 
+ *
  * @author yael
  *
  */
 public class DocRequestParamAnnotation extends DocAnnotation {
 
-	public DocRequestParamAnnotation(final String name) {
-		super(name);
+	public DocRequestParamAnnotation(final AnnotationDesc annotationDesc) {
+		super(annotationDesc);
 	}
 
-	private String value;
-	private String defaultValue;
-	private Boolean requierd;
-
 	public String getValue() {
-		return value;
+		return getValue(RestDocConstants.REQUEST_PARAMS_VALUE).or("").toString();
 	}
 
 	public String getDefaultValue() {
-		return defaultValue;
+		return getValue(RestDocConstants.REQUEST_PARAMS_DEFAULT_VALUE).or("").toString();
 	}
 
-	public Boolean isRequierd() {
-		return requierd;
+	public boolean isRequired() {
+		return (Boolean) getValue(RestDocConstants.REQUEST_PARAMS_REQUIRED).or(true);
 	}
-
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String shortAttrName = getShortName(attrName);
-
-		if (RestDocConstants.REQUEST_PARAMS_VALUE.equals(shortAttrName)) {
-			value = (String) attrValue;
-		}
-		if (RestDocConstants.REQUEST_PARAMS_DEFAULT_VALUE.equals(shortAttrName)) {
-			defaultValue = (String) attrValue;
-		}
-		if (RestDocConstants.REQUEST_PARAMS_REQUIRED.equals(shortAttrName)) {
-			requierd = (Boolean) attrValue;
-		}
-
-		super.addAttribute(shortAttrName, attrValue);
-	}
-
 }

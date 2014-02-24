@@ -20,45 +20,36 @@ import java.io.IOException;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
+import com.sun.javadoc.AnnotationDesc;
+
 /**
- * 
+ *
  * @author yael
  *
  */
-public class DocJsonRequestExample extends DocAnnotation {
+public class DocJsonRequestExample  {
+  private String jsonString_;
+  private String comments_;
 
-	private String requestJsonBody;
-	private String comments;
+  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("", "") {
+    public String generateJsonRequestBody() throws IOException {
+      return "request has no body";
+    }
+  };
 
-	public DocJsonRequestExample(final String name) {
-		super(name);
-	}
-
+  public DocJsonRequestExample(String example, String comments) {
+    jsonString_ = example;
+    comments_ = comments;
+  }
 	public String getComments() {
-		return comments;
+		return comments_;
 	}
 
 	/**
-	 * 
 	 * @return The request body in Json format.
 	 * @throws IOException .
 	 */
 	public String generateJsonRequestBody() throws IOException {
-		return Utils.getIndentJson(requestJsonBody);
-	}
-
-	@Override
-	public void addAttribute(final String attrName, final Object attrValue) {
-		String value = attrValue.toString().trim();
-
-		String shortAttrName = getShortName(attrName);
-
-		if (RestDocConstants.JSON_REQUEST_EXAMPLE_REQUEST_PARAMS.equals(shortAttrName)) {
-			requestJsonBody = value;
-		} else if (RestDocConstants.JSON_REQUEST_EXAMPLE_COMMENTS.equals(shortAttrName)) {
-			comments = value;
-		}
-
-		super.addAttribute(shortAttrName, value);
+		return Utils.getIndentJson(jsonString_);
 	}
 }
