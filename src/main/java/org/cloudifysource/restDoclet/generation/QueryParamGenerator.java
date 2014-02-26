@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
+import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -37,23 +38,23 @@ public class QueryParamGenerator {
   public QueryParamGenerator() {
   }
 
-  public List<DocParameter> createParamList(Parameter parameter) throws ClassNotFoundException, IntrospectionException {
+  public List<DocParameter> createParamList(Parameter parameter, DocRequestParamAnnotation annotation) throws ClassNotFoundException, IntrospectionException {
     List<DocParameter> parameters = new ArrayList<DocParameter>();
     Type type = parameter.type();
     if (type.isPrimitive() || wrapperClassNames.contains(type.qualifiedTypeName())) {
       Class<?> clazz = ClassUtils.getClass(type.qualifiedTypeName());
-      parameters.add(new DocParameter(parameter.name(), clazz, "RequestParam"));
+      parameters.add(new DocParameter(parameter.name(), clazz, "RequestParam", annotation));
     }
     else if (List.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), List.class, "RequestParam"));
+      parameters.add(new DocParameter(parameter.name(), List.class, "RequestParam", annotation));
     }
     else if (Set.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), Set.class, "RequestParam"));
+      parameters.add(new DocParameter(parameter.name(), Set.class, "RequestParam", annotation));
     }
     else {
       BeanInfo info = Introspector.getBeanInfo(Class.forName(type.qualifiedTypeName()), Object.class);
       for (PropertyDescriptor prop : info.getPropertyDescriptors()) {
-        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType(), "RequestParam"));
+        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType(), "RequestParam", annotation));
       }
     }
     return parameters;

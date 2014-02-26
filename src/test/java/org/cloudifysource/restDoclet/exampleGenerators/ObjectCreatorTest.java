@@ -1,11 +1,14 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.isA;
@@ -17,6 +20,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * @author edward
@@ -56,12 +61,20 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void createsLists() throws IllegalAccessException {
+  public void createsLists() throws IllegalAccessException, IOException {
     Aquarium aquarium = (Aquarium) objectCreator_.createObject(Aquarium.class);
     assertThat(aquarium.getFishes(), instanceOf(List.class));
     assertThat(aquarium.getFishes(), hasSize(greaterThan(0)));
     assertThat(aquarium.getFishes().get(0), instanceOf(Fish.class));
     assertThat(aquarium.getFishes().get(0).getName(), notNullValue());
+  }
+
+  @Test
+  public void createsListsOfLists() throws IOException, IllegalAccessException {
+    SeaWorld seaWorld = (SeaWorld) objectCreator_.createObject(SeaWorld.class);
+    new ObjectMapper()
+            .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
+            .writeValueAsString(seaWorld);
   }
 
   @Test
@@ -104,6 +117,13 @@ public class ObjectCreatorTest {
     Map.Entry<Long,String> entry = it.next();
     assertThat(entry.getKey(), isA(Long.class));
     assertThat(entry.getValue(), isA(String.class));
+  }
+
+  @Test
+  public void canCreateATopLevelList() throws IllegalAccessException {
+    List<String> stringList = newArrayList("a");
+    Object listObject = objectCreator_.createObject(stringList.getClass());
+    assertThat(listObject, instanceOf(List.class));
   }
 
   static class EmptyClass {
@@ -150,6 +170,14 @@ public class ObjectCreatorTest {
 
     public List<Fish> getFishes() {
       return fishes_;
+    }
+  }
+
+  static class SeaWorld {
+    private List<Aquarium> aquariums_;
+
+    public List<Aquarium> getAquariums()  {
+      return aquariums_;
     }
   }
 

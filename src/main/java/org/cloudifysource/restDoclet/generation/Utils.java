@@ -21,17 +21,13 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
-import org.cloudifysource.restDoclet.docElements.DocAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocController;
 import org.cloudifysource.restDoclet.docElements.DocHttpMethod;
 import org.cloudifysource.restDoclet.docElements.DocMethod;
-import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
@@ -39,8 +35,6 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.ParamTag;
 
 /**
  *
@@ -48,37 +42,16 @@ import com.sun.javadoc.ParamTag;
  *
  */
 public final class Utils {
-	/**
-	 *
-	 * @param annotations .
-	 * @param annotationName .
-	 * @return The annotation.
-	 */
-	protected static DocAnnotation getAnnotation(final Iterable<DocAnnotation> annotations, final String annotationName) {
-		DocAnnotation requestedAnnotation = null;
-		if (annotations != null) {
-			for (DocAnnotation annotation : annotations) {
-				if (annotation.getName().equals(annotationName)) {
-					requestedAnnotation = annotation;
-					break;
-				}
-			}
-		}
-		return requestedAnnotation;
-	}
 
 	/**
-	 *
-	 * @param classDoc .
-	 * @param annotations .
-	 * @return true if the class should be filtered out, false otherwise.
+	 * @param classDoc
+	 * @param annotations
+   * @return true if the class should be filtered out, false otherwise.
 	 */
 	protected static boolean filterOutControllerClass(final ClassDoc classDoc, final RestAnnotations annotations) {
     String name = classDoc.qualifiedTypeName();
 		return (annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.CONTROLLER) == null
 				|| RestDocConstants.ADMIN_API_CONTROLLER_CLASS_NAME.equals(name));
-		// return
-		// !(classDoc.qualifiedTypeName().equals(RestDocConstants.SERVICE_CONTROLLER_CLASS_NAME));
 	}
 
 	@SuppressWarnings("unused")

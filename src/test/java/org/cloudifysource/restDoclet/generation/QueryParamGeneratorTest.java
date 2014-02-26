@@ -5,13 +5,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.cloudifysource.restDoclet.docElements.DocParameter;
+import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.Parameter;
 import com.sun.javadoc.Type;
 
@@ -19,12 +23,21 @@ import com.sun.javadoc.Type;
  * @author edward
  */
 public class QueryParamGeneratorTest {
+  private DocRequestParamAnnotation annotation_;
+
+  @Before
+  public void setup() {
+    AnnotationDesc annotationDesc = mock(AnnotationDesc.class);
+    when(annotationDesc.elementValues()).thenReturn(new AnnotationDesc.ElementValuePair[0]);
+    annotation_ = new DocRequestParamAnnotation(annotationDesc);
+  }
+
   @Test
   public void primitiveParamsGenerated() throws IntrospectionException, ClassNotFoundException {
     QueryParamGenerator gen =  new QueryParamGenerator();
     Parameter primitive = primitiveParam();
 
-    List<DocParameter> params = gen.createParamList(primitive);
+    List<DocParameter> params = gen.createParamList(primitive, annotation_);
     assertThat(params, hasSize(1));
   }
 
@@ -33,7 +46,7 @@ public class QueryParamGeneratorTest {
     QueryParamGenerator gen = new QueryParamGenerator();
     Parameter wrapper = wrapperParam();
 
-    List<DocParameter> params = gen.createParamList(wrapper);
+    List<DocParameter> params = gen.createParamList(wrapper, annotation_);
     assertThat(params, hasSize(1));
   }
 
@@ -42,7 +55,7 @@ public class QueryParamGeneratorTest {
     QueryParamGenerator gen = new QueryParamGenerator();
     Parameter bean = beanParam();
 
-    List<DocParameter> params = gen.createParamList(bean);
+    List<DocParameter> params = gen.createParamList(bean, annotation_);
     assertThat(params, hasSize(2));
   }
 
@@ -51,7 +64,7 @@ public class QueryParamGeneratorTest {
     QueryParamGenerator gen = new QueryParamGenerator();
     Parameter list = listParam();
 
-    List<DocParameter> params = gen.createParamList(list);
+    List<DocParameter> params = gen.createParamList(list, annotation_);
     assertThat(params, hasSize(1));
   }
 
@@ -60,7 +73,7 @@ public class QueryParamGeneratorTest {
     QueryParamGenerator gen = new QueryParamGenerator();
     Parameter set = setParam();
 
-    List<DocParameter> params = gen.createParamList(set);
+    List<DocParameter> params = gen.createParamList(set, annotation_);
     assertThat(params, hasSize(1));
   }
 

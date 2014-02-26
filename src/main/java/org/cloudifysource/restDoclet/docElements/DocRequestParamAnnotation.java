@@ -41,4 +41,9 @@ public class DocRequestParamAnnotation extends DocAnnotation {
 	public boolean isRequired() {
 		return (Boolean) getValue(RestDocConstants.REQUEST_PARAMS_REQUIRED).or(true);
 	}
+
+  public String toString() {
+    return getValue();
+  }
+
 }
