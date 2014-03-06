@@ -120,7 +120,13 @@ public class ObjectCreator {
   Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
     Class[] classes = new Class[types.length];
     for (int i = 0; i < types.length; i++) {
-      classes[i] = (Class) (types[i]);
+      if (types[i] instanceof Class) {
+        classes[i] = (Class) (types[i]);
+      }
+      else {
+        logger_.warning("nonclass: " + types[i]);
+        classes[i] = String.class;
+      }
     }
     return classes;
   }
