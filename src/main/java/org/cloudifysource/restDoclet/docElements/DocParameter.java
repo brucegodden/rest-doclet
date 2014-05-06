@@ -28,11 +28,12 @@ public class DocParameter {
 	private DocRequestParamAnnotation requestParamAnnotation_;
   private String description_;
 
-  public DocParameter(final String name, final Class clazz, String location) {
+  public DocParameter(final String name, final Class clazz, String location, DocRequestParamAnnotation annotation) {
 		name_ = name;
     clazz_ = clazz;
     location_ = location;
-	}
+    requestParamAnnotation_ = annotation;
+  }
 
 	public String getName() {
 		return name_;
@@ -45,6 +46,10 @@ public class DocParameter {
 	public String getDescription() {
 		return description_;
 	}
+
+  public String getRequestParamAnnotation() {
+    return requestParamAnnotation_ != null ? requestParamAnnotation_.getValue() : "";
+  }
 
 	/**
 	 *

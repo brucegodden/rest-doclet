@@ -15,12 +15,9 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.exampleGenerators;
 
-import org.apache.commons.lang.ClassUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.sun.javadoc.Type;
 
 /**
  * Creates a default example -
