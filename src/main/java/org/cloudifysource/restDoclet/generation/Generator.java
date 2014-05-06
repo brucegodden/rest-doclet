@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +50,9 @@ import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocReturnDetails;
 import org.cloudifysource.restDoclet.exampleGenerators.DocDefaultExampleGenerator;
+import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.IDocExampleGenerator;
+import org.cloudifysource.restDoclet.exampleGenerators.ObjectCreator;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -57,10 +61,12 @@ import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Parameter;
+import com.sun.javadoc.ParameterizedType;
 import com.sun.javadoc.RootDoc;
 import com.sun.javadoc.Tag;
 import com.sun.javadoc.Type;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 /**
  * Generates REST API documentation in an HTML form. <br />
@@ -98,6 +104,7 @@ public class Generator {
 	private static IDocExampleGenerator requestExampleGenerator;
 	private static IDocExampleGenerator responseExampleGenerator;
   private static AnnotationReader annotationReader = new AnnotationReader();
+  private static ExampleGenerator exampleGenerator = new ExampleGenerator(new ObjectCreator());
 
 	/**
 	 *
@@ -412,13 +419,15 @@ public class Generator {
 		return controllers;
 	}
 
-	private SortedMap<String, DocMethod> generateMethods(
-			final MethodDoc[] methods)
+	private SortedMap<String, DocMethod> generateMethods(final MethodDoc[] methods)
 					throws Exception {
 		SortedMap<String, DocMethod> docMethods = new TreeMap<String, DocMethod>();
 
 		for (MethodDoc methodDoc : methods) {
-      RestAnnotations restAnnotations = annotationReader.read(Arrays.asList(methodDoc.annotations()), Arrays.asList(methodDoc.tags()));
+      List<AnnotationDesc> annotations = newArrayList();
+      annotations.addAll(Arrays.asList(methodDoc.annotations()));
+      annotations.addAll(paramAnnotations(methodDoc));
+      RestAnnotations restAnnotations = annotationReader.read(annotations, Arrays.asList(methodDoc.tags()));
 
 			// Does not handle methods without a RequestMapping annotation.
 			if (restAnnotations.getAnnotation(RestDocConstants.DocAnnotationTypes.INTERNAL_METHOD) != null || !restAnnotations.requestMappingAnnotation().isPresent()) {
@@ -447,6 +456,15 @@ public class Generator {
 		return docMethods;
 	}
 
+  private static List<AnnotationDesc> paramAnnotations(MethodDoc methodDoc) {
+    List<AnnotationDesc> annotations = newArrayList();
+    for (Parameter parameter : methodDoc.parameters()) {
+      annotations.addAll(Arrays.asList(parameter.annotations()));
+    }
+    return annotations;
+  }
+
+
   private DocHttpMethod[] httpMethodDoc(
           final List<String> methods,
           final MethodDoc methodDoc,
@@ -470,7 +488,7 @@ public class Generator {
 		httpMethod.setDescription(methodDoc.commentText());
 		httpMethod.setParams(generateParameters(methodDoc));
 		httpMethod.setReturnDetails(generateReturnDetails(methodDoc));
-		generateExamples(httpMethod, restAnnotations);
+		generateExamples(methodDoc, httpMethod, restAnnotations);
 		httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
     httpMethod.setHeaders(restAnnotations.requestMappingAnnotation().get().headers());
 
@@ -482,12 +500,13 @@ public class Generator {
 		return httpMethod;
 	}
 
-	private static void generateExamples(final DocHttpMethod httpMethod, final RestAnnotations annotations)
+	private void generateExamples(final MethodDoc methodDoc, final DocHttpMethod httpMethod, final RestAnnotations annotations)
 					throws Exception {
 		DocJsonRequestExample requestExample = annotations.jsonRequestExample().or(generateRequestExample(httpMethod));
 		httpMethod.setRequestExample(requestExample.generateJsonRequestBody());
 
-		DocJsonResponseExample responseExample = annotations.jsonResponseExample().or(generateResponseExample(httpMethod));
+		DocJsonResponseExample responseExample = annotations.jsonResponseExample()
+            .or(exampleGenerator.exampleResponse(methodDoc));
 		httpMethod.setResponseExample(responseExample.generateJsonResponseBody());
 	}
 
@@ -503,7 +522,8 @@ public class Generator {
 		if (clazz == null) {
 			return DocJsonRequestExample.EMPTY;
 		}
-		String generateExample = null;
+
+		String generateExample;
 		try {
 			generateExample = requestExampleGenerator.generateExample(clazz);
 			generateExample = Utils.getIndentJson(generateExample);
@@ -519,6 +539,7 @@ public class Generator {
 		}
     return new DocJsonRequestExample(generateExample, "");
 	}
+
 
 	private static DocJsonResponseExample generateResponseExample(final DocHttpMethod httpMethod) {
 		Type returnType = httpMethod.getReturnDetails().getReturnType();
@@ -549,10 +570,11 @@ public class Generator {
 		List<DocParameter> paramsList = new LinkedList<DocParameter>();
 
 		for (Parameter parameter : methodDoc.parameters()) {
-      String name = parameter.name();
+			String name = parameter.name();
+      List<AnnotationDesc> annotations = Arrays.asList(parameter.annotations());
       Class<?> clazz = ClassUtils.getClass(parameter.type().qualifiedTypeName());
-      String location = paramAnnotationTypeString(parameter.annotations());
-      DocParameter docParameter = new DocParameter(name, clazz, location);
+      String location = paramAnnotationTypeString(annotations);
+      DocParameter docParameter = new DocParameter(name, clazz, location, annotationReader.read(annotations, null).requestParamAnnotation().orNull());
       if (location == null || location.isEmpty()) {
         paramsList.addAll(generateQueryParameters(parameter));
       }
@@ -572,7 +594,10 @@ public class Generator {
 
   private List<DocParameter> generateQueryParameters(Parameter queryParameter) throws IntrospectionException,
           ClassNotFoundException {
-    return new QueryParamGenerator(new DocParameterGenerator()).createParamList(queryParameter);
+    Collection<Tag> tags = newArrayList();
+    return new QueryParamGenerator().createParamList(
+            queryParameter,
+            annotationReader.read(Arrays.asList(queryParameter.annotations()), tags).requestParamAnnotation().orNull());
   }
 
   /**
@@ -598,7 +623,7 @@ public class Generator {
 		return returnDetails;
 	}
 
-  private static String paramAnnotationTypeString(AnnotationDesc[] annotations) {
+  private static String paramAnnotationTypeString(List<AnnotationDesc> annotations) {
     List<String> types = newArrayList();
     for (AnnotationDesc annotationDesc : annotations) {
       types.add(annotationDesc.annotationType().simpleTypeName());

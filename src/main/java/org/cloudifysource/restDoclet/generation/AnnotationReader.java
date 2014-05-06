@@ -51,7 +51,8 @@ public class AnnotationReader {
     //filter out default annotations
     final Map<RestDocConstants.DocAnnotationTypes, AnnotationDesc> annotationMap = new HashMap<RestDocConstants.DocAnnotationTypes, AnnotationDesc>();
     for (AnnotationDesc annotation : annotations) {
-      annotationMap.put(RestDocConstants.DocAnnotationTypes.fromName(annotation.annotationType().typeName()), annotation);
+      annotationMap.put(RestDocConstants.DocAnnotationTypes.fromName(annotation.annotationType().typeName()),
+              annotation);
     }
 
     return new RestAnnotations() {

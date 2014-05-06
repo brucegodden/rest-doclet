@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 
+ *
  * @author yael
  *
  */
@@ -27,19 +28,12 @@ public class DocMethod {
 	private String uri;
 	private String description;
 	private final List<DocHttpMethod> httpMethods;
-	
-	
-	public DocMethod(final DocHttpMethod httpMethod) {
-		httpMethods = new LinkedList<DocHttpMethod>();
-		httpMethods.add(httpMethod);
-	}
+
 	public DocMethod(final DocHttpMethod[] httpMethodArray) {
 		httpMethods = new LinkedList<DocHttpMethod>();
-		for (DocHttpMethod docHttpMethod : httpMethodArray) {			
-			httpMethods.add(docHttpMethod);
-		}
+    Collections.addAll(httpMethods, httpMethodArray);
 	}
-	
+
 	public String getUri() {
 		return uri;
 	}
@@ -49,25 +43,19 @@ public class DocMethod {
 	public List<DocHttpMethod> getHttpMethods() {
 		return httpMethods;
 	}
-	/** 
-	 * 
-	 * @param httpMethod .
-	 */
-	public void addHttpMethod(final DocHttpMethod httpMethod) {
-		this.httpMethods.add(httpMethod);
-	}
+
 	/**
-	 * 
+	 *
 	 * @param httpMethodArray An array of HTTP methods.
 	 */
 	public void addHttpMethods(final DocHttpMethod[] httpMethodArray) {
-		for (DocHttpMethod docHttpMethod : httpMethodArray) {			
-			this.httpMethods.add(docHttpMethod);
-		}
+    Collections.addAll(this.httpMethods, httpMethodArray);
 	}
+
 	public String getDescription() {
 		return description;
 	}
+
 	public void setDescription(final String description) {
 		this.description = description;
 	}

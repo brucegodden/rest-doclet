@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.StringUtils;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import org.springframework.cglib.proxy.Enhancer;
@@ -42,6 +40,12 @@ public class ObjectCreator {
   }
 
   public Object createObject(final Class<?> cls) throws IllegalAccessException {
+    for (ExampleCreator creator : exampleCreators_) {
+      if (creator.match(cls)) {
+        return creator.create(cls);
+      }
+    }
+
     if (isAbstractOrInterface(cls)) return createProxy(cls);
 
     try {
@@ -53,6 +57,15 @@ public class ObjectCreator {
       logger_.warning("Could not instantiate an object of class: " + cls.getName());
       return null;
     }
+  }
+
+  public Object createParameterizedObject(final Class base, final Class[] paramClasses) throws IllegalAccessException {
+    for (ParametricExampleCreator creator : paramExampleCreators_) {
+      if (creator.match(base)) {
+        return creator.create(base, paramClasses);
+      }
+    }
+    return createObject(base);
   }
 
   public void instantiateFieldsOn(final Object object) throws IllegalAccessException {
@@ -71,15 +84,17 @@ public class ObjectCreator {
     try {
       field.setAccessible(true);
       Class<?> fieldType = field.getType();
-
       if (field.getGenericType() instanceof ParameterizedType) {
         field.set(object, createParameterizedType(fieldType, (ParameterizedType) field.getGenericType()));
       }
       else {
-        field.set(object, createValueForType(fieldType));
+        field.set(object, createObject(fieldType));
       }
     }
     catch (IllegalAccessException illegal) {
+      logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
+    }
+    catch (ClassNotFoundException e) {
       logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
     }
   }
@@ -91,32 +106,29 @@ public class ObjectCreator {
                               final Object[] args, final MethodProxy methodProxy)
               throws Throwable
       {
-        return createValueForType(method.getReturnType());
+        return createObject(method.getReturnType());
       }
     });
   }
 
-  /**
-   * Only Lists with one simple generic param currently supported.
-   */
   private Object createParameterizedType(final Class base, final ParameterizedType genericType)
-          throws IllegalAccessException
+          throws IllegalAccessException, ClassNotFoundException
   {
-    for (ParametricExampleCreator creator : paramExampleCreators_) {
-      if (creator.match(base)) {
-        return creator.create(base, genericType.getActualTypeArguments());
-      }
-    }
-    return createObject(base);
+    return createParameterizedObject(base, reflectTypesToClasses(genericType.getActualTypeArguments()));
   }
 
-  private Object createValueForType(final Class<?> cls) throws IllegalAccessException {
-    for (ExampleCreator creator : exampleCreators_) {
-      if (creator.match(cls)) {
-        return creator.create(cls);
+  Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
+    Class[] classes = new Class[types.length];
+    for (int i = 0; i < types.length; i++) {
+      if (types[i] instanceof Class) {
+        classes[i] = (Class) (types[i]);
+      }
+      else {
+        logger_.warning("nonclass: " + types[i]);
+        classes[i] = String.class;
       }
     }
-    return createObject(cls);
+    return classes;
   }
 
   private boolean isAbstractOrInterface(final Class<?> cls) {
@@ -130,7 +142,7 @@ public class ObjectCreator {
   }
 
   interface ParametricExampleCreator extends ExampleCreator {
-    Object create(Class cls, Type[] typeParams) throws IllegalAccessException;
+    Object create(Class cls, Class[] paramClasses) throws IllegalAccessException;
   }
 
   private static ExampleCreator stringCreator_ = new ExampleCreator() {
@@ -178,29 +190,10 @@ public class ObjectCreator {
       return cls.isEnum();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object create(final Class cls) {
       return Enum.valueOf((Class<? extends Enum>) cls, cls.getEnumConstants()[0].toString());
-    }
-  };
-
-  private ParametricExampleCreator listCreator_ = new ParametricExampleCreator() {
-    @Override
-    public boolean match(final Class cls) {
-      return List.class.isAssignableFrom(cls);
-    }
-
-    @Override
-    public Object create(final Class cls) throws IllegalAccessException {
-      return this.create(cls, new Type[] { Object.class });
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object create(final Class cls, final Type[] typeParams) throws IllegalAccessException {
-        LinkedList list = new LinkedList();
-        list.add(createValueForType((Class) typeParams[0]));
-        return list;
     }
   };
 
@@ -216,6 +209,26 @@ public class ObjectCreator {
     }
   };
 
+  private ParametricExampleCreator listCreator_ = new ParametricExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      return List.class.isAssignableFrom(cls);
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
+      return this.create(cls, new Class[] { Object.class });
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
+        LinkedList list = new LinkedList();
+        list.add(createObject(paramClasses[0]));
+        return list;
+    }
+  };
+
   private ParametricExampleCreator mapCreator_ = new ParametricExampleCreator() {
     @Override
     public boolean match(final Class cls) {
@@ -224,14 +237,14 @@ public class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws IllegalAccessException {
-      return this.create(cls, new Type[] {String.class, String.class});
+      return this.create(cls, new Class[] {String.class, String.class});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Type[] typeParams) throws IllegalAccessException {
+    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
       HashMap map = new HashMap();
-      map.put(createValueForType((Class) typeParams[0]), createValueForType((Class) typeParams[1]));
+      map.put(createObject(paramClasses[0]), createObject(paramClasses[1]));
       return map;
     }
   };
