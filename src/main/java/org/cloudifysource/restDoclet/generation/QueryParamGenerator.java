@@ -9,9 +9,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ClassUtils;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
+import org.apache.commons.lang.ClassUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -33,9 +33,6 @@ public class QueryParamGenerator {
         return input.getName();
       }
     });
-  }
-
-  public QueryParamGenerator() {
   }
 
   public List<DocParameter> createParamList(Parameter parameter, DocRequestParamAnnotation annotation) throws ClassNotFoundException, IntrospectionException {

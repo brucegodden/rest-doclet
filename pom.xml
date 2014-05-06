@@ -4,7 +4,6 @@
 	<groupId>org.cloudifysource</groupId>
 	<artifactId>rest-doclet</artifactId>
 	<version>0.5.18</version>
-
 	<properties>
 		<springVersion>3.2.4.RELEASE</springVersion>
 	</properties>
@@ -49,6 +48,11 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
+      <version>${springVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
       <version>${springVersion}</version>
     </dependency>
 		<dependency>

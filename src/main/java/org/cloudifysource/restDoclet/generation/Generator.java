@@ -63,6 +63,7 @@ import com.sun.javadoc.Parameter;
 import com.sun.javadoc.ParameterizedType;
 import com.sun.javadoc.RootDoc;
 import com.sun.javadoc.Tag;
+import com.sun.javadoc.Type;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
@@ -72,7 +73,7 @@ import static com.google.common.collect.Lists.newArrayListWithCapacity;
  * documentation.
  * <ul>
  * <li>To specify your sources change the values of
- * {@link RestDocConstants#SOURCE_PATH} and
+ * {@link RestDocConstants#SOURCES_PATH} and
  * {@link RestDocConstants#CONTROLLERS_PACKAGE}.</li>
  * <li>To specify different template path change the value
  * {@link RestDocConstants#VELOCITY_TEMPLATE_PATH}.</li>
@@ -90,7 +91,7 @@ public class Generator {
 	private static final Logger logger = Logger.getLogger(Generator.class.getName());
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-	private final RootDoc documentation;
+	private final RootDoc documentation_;
 	private String velocityTemplatePath;
 	private String velocityTemplateFileName;
 	private boolean isUserDefineTemplatePath = false;
@@ -109,8 +110,8 @@ public class Generator {
 	 * @param rootDoc
 	 */
 	public Generator(final RootDoc rootDoc) {
-		documentation = rootDoc;
-		setFlags(documentation.options());
+		documentation_ = rootDoc;
+		setFlags(documentation_.options());
 	}
 
 	/**
@@ -286,7 +287,7 @@ public class Generator {
 	public void run() throws Exception {
 
 		// GENERATE DOCUMENTATIONS IN DOC CLASSES
-		ClassDoc[] classes = documentation.classes();
+		ClassDoc[] classes = documentation_.classes();
 		List<DocController> controllers = generateControllers(classes);
 		logger.log(Level.INFO, "Generated " + controllers.size()
 				+ " controlles, creating HTML documentation using velocity template.");
@@ -364,7 +365,7 @@ public class Generator {
 
 	}
 
-	private static List<DocController> generateControllers(final ClassDoc[] classes)
+	private List<DocController> generateControllers(final ClassDoc[] classes)
 			throws Exception {
 		List<DocController> controllersList = new LinkedList<DocController>();
 		for (ClassDoc classDoc : classes) {
@@ -377,7 +378,7 @@ public class Generator {
 		return controllersList;
 	}
 
-	private static List<DocController> generateControllers(final ClassDoc classDoc)
+	private List<DocController> generateControllers(final ClassDoc classDoc)
 			throws Exception {
 		List<DocController> controllers = new LinkedList<DocController>();
 		RestAnnotations restAnnotations = annotationReader.read(
@@ -417,7 +418,7 @@ public class Generator {
 		return controllers;
 	}
 
-	private static SortedMap<String, DocMethod> generateMethods(final MethodDoc[] methods)
+	private SortedMap<String, DocMethod> generateMethods(final MethodDoc[] methods)
 					throws Exception {
 		SortedMap<String, DocMethod> docMethods = new TreeMap<String, DocMethod>();
 
@@ -462,7 +463,8 @@ public class Generator {
     return annotations;
   }
 
-  private static DocHttpMethod[] httpMethodDoc(
+
+  private DocHttpMethod[] httpMethodDoc(
           final List<String> methods,
           final MethodDoc methodDoc,
           final RestAnnotations annotations) throws Exception
@@ -477,7 +479,7 @@ public class Generator {
     return docHttpMethodArray;
   }
 
-  private static DocHttpMethod generateHttpMethod(final MethodDoc methodDoc,
+  private DocHttpMethod generateHttpMethod(final MethodDoc methodDoc,
                                                   final String httpMethodName,
                                                   final RestAnnotations restAnnotations)
 					throws Exception {
@@ -537,7 +539,32 @@ public class Generator {
     return new DocJsonRequestExample(generateExample, "");
 	}
 
-	private static List<DocParameter> generateParameters(final MethodDoc methodDoc) throws ClassNotFoundException,
+
+	private static DocJsonResponseExample generateResponseExample(final DocHttpMethod httpMethod) {
+		Type returnType = httpMethod.getReturnDetails().getReturnType();
+		String typeName = returnType.qualifiedTypeName();
+		if (typeName.equals(void.class.getName())) {
+			return DocJsonResponseExample.EMPTY;
+		}
+		String generateExample;
+		try {
+      Class<?> clazz = ClassUtils.getClass(returnType.qualifiedTypeName());
+      generateExample = responseExampleGenerator.generateExample(clazz);
+			generateExample = Utils.getIndentJson(generateExample);
+		} catch (Exception e) {
+			logger.warning("Could not generate response example for method: " + httpMethod.getMethodSignatureName()
+					+ " with the return value type [" + typeName + "]. Exception was: " + e);
+			generateExample = RestDocConstants.FAILED_TO_CREATE_RESPONSE_EXAMPLE
+					+ LINE_SEPARATOR
+					+ "Return value type: " + typeName + "."
+					+ LINE_SEPARATOR
+					+ "The exception caught was " + e;
+		}
+
+		return new DocJsonResponseExample(generateExample, "");
+	}
+
+	private List<DocParameter> generateParameters(final MethodDoc methodDoc) throws ClassNotFoundException,
           IntrospectionException {
 		List<DocParameter> paramsList = new LinkedList<DocParameter>();
 
@@ -564,7 +591,7 @@ public class Generator {
 		return paramsList;
 	}
 
-  private static List<DocParameter> generateQueryParameters(Parameter queryParameter) throws IntrospectionException,
+  private List<DocParameter> generateQueryParameters(Parameter queryParameter) throws IntrospectionException,
           ClassNotFoundException {
     Collection<Tag> tags = newArrayList();
     return new QueryParamGenerator().createParamList(
