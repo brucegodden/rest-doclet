@@ -34,14 +34,6 @@ public class ExampleGenerator {
 
       return new DocJsonResponseExample(Utils.getIndentJson(generateExample), "");
     } catch (Exception e) {
-//      logger.warning("Could not generate request example for method: " + httpMethod.getMethodSignatureName()
-//                     + " with the request parameter type " + clazz.getName()
-//                     + ". Exception was: " + e);
-//      generateExample = RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
-//                        + LINE_SEPARATOR
-//                        + "Parameter type: " + clazz.getName() + "."
-//                        + LINE_SEPARATOR
-//                        + "The exception caught was " + e;
       return new DocJsonResponseExample(RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
                         + "\n"
                         + "Parameter type: " + methodDoc.returnType() + "."

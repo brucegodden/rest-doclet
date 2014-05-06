@@ -104,6 +104,7 @@ public class Generator {
 	private static IDocExampleGenerator requestExampleGenerator;
 	private static IDocExampleGenerator responseExampleGenerator;
   private static AnnotationReader annotationReader = new AnnotationReader();
+  private static ExampleGenerator exampleGenerator = new ExampleGenerator(new ObjectCreator());
 
 	/**
 	 *
@@ -378,7 +379,7 @@ public class Generator {
 		return controllersList;
 	}
 
-	private static List<DocController> generateControllers(final ClassDoc classDoc)
+	private List<DocController> generateControllers(final ClassDoc classDoc)
 			throws Exception {
 		List<DocController> controllers = new LinkedList<DocController>();
 		RestAnnotations restAnnotations = annotationReader.read(
@@ -499,7 +500,7 @@ public class Generator {
 		return httpMethod;
 	}
 
-	private static void generateExamples(final MethodDoc methodDoc, final DocHttpMethod httpMethod, final RestAnnotations annotations)
+	private void generateExamples(final MethodDoc methodDoc, final DocHttpMethod httpMethod, final RestAnnotations annotations)
 					throws Exception {
 		DocJsonRequestExample requestExample = annotations.jsonRequestExample().or(generateRequestExample(httpMethod));
 		httpMethod.setRequestExample(requestExample.generateJsonRequestBody());
