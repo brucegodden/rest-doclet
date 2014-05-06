@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -103,7 +104,6 @@ public class Generator {
 	private static IDocExampleGenerator requestExampleGenerator;
 	private static IDocExampleGenerator responseExampleGenerator;
   private static AnnotationReader annotationReader = new AnnotationReader();
-  private static ExampleGenerator exampleGenerator = new ExampleGenerator(new ObjectCreator());
 
 	/**
 	 *
@@ -378,7 +378,7 @@ public class Generator {
 		return controllersList;
 	}
 
-	private List<DocController> generateControllers(final ClassDoc classDoc)
+	private static List<DocController> generateControllers(final ClassDoc classDoc)
 			throws Exception {
 		List<DocController> controllers = new LinkedList<DocController>();
 		RestAnnotations restAnnotations = annotationReader.read(
