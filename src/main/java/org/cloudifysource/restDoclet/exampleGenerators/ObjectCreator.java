@@ -92,7 +92,11 @@ public class ObjectCreator {
       }
     }
     catch (IllegalAccessException illegal) {
-      logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
+      // serialVersionUID is normally defined as private static final and generates an IllegalAccessException
+      // but it isn't actually a field that we would ever expect to set so ignore the error.
+      if (!field.getName().equals("serialVersionUID")) {
+        logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
+      }
     }
     catch (ClassNotFoundException e) {
       logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
@@ -217,7 +221,7 @@ public class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws IllegalAccessException {
-      return this.create(cls, new Class[] { Object.class });
+      return this.create(cls, new Class[]{Object.class});
     }
 
     @SuppressWarnings("unchecked")

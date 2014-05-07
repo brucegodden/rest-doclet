@@ -129,6 +129,7 @@ public final class RestDocConstants {
 	 *
 	 */
 	public static final String CONTROLLER_ANNOTATION = "Controller";
+  public static final String REST_CONTROLLER_ANNOTATION = "RestController";
 
 	/**
 	 *
@@ -272,6 +273,7 @@ public final class RestDocConstants {
 		 *
 		 */
 		CONTROLLER,
+		REST_CONTROLLER,
 		/**
 		 *
 		 */
@@ -323,6 +325,8 @@ public final class RestDocConstants {
 				return INTERNAL_METHOD;
 			} else if (CONTROLLER_ANNOTATION.equals(annotationName)) {
 				return CONTROLLER;
+			} else if (REST_CONTROLLER_ANNOTATION.equals(annotationName)) {
+				return REST_CONTROLLER;
 			} else if (REQUEST_MAPPING_ANNOTATION.equals(annotationName)) {
 				return REQUEST_MAPPING;
 			} else if (REQUEST_PARAMS_ANNOTATION.equals(annotationName)) {
@@ -370,6 +374,7 @@ public final class RestDocConstants {
 			case RESPONSE_BODY:
 			case PATH_VARIABLE:
 			case CONTROLLER:
+			case REST_CONTROLLER:
 			case INTERNAL_METHOD:
 				return DocAnnotation.class;
 			default:
