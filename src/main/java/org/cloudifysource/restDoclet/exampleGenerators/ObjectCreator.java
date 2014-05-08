@@ -82,21 +82,19 @@ public class ObjectCreator {
 
   private void tryToSetField(final Field field, final Object object) {
     try {
-      field.setAccessible(true);
-      Class<?> fieldType = field.getType();
-      if (field.getGenericType() instanceof ParameterizedType) {
-        field.set(object, createParameterizedType(fieldType, (ParameterizedType) field.getGenericType()));
-      }
-      else {
-        field.set(object, createObject(fieldType));
+      final int modifiers = field.getModifiers();
+      if (!Modifier.isFinal(modifiers) || !Modifier.isStatic(modifiers)) {
+        field.setAccessible(true);
+        Class<?> fieldType = field.getType();
+        if (field.getGenericType() instanceof ParameterizedType) {
+          field.set(object, createParameterizedType(fieldType, (ParameterizedType) field.getGenericType()));
+        } else {
+          field.set(object, createObject(fieldType));
+        }
       }
     }
     catch (IllegalAccessException illegal) {
-      // serialVersionUID is normally defined as private static final and generates an IllegalAccessException
-      // but it isn't actually a field that we would ever expect to set so ignore the error.
-      if (!field.getName().equals("serialVersionUID")) {
-        logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
-      }
+      logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
     }
     catch (ClassNotFoundException e) {
       logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());

@@ -291,7 +291,7 @@ public class Generator {
 		ClassDoc[] classes = documentation_.classes();
 		List<DocController> controllers = generateControllers(classes);
 		logger.log(Level.INFO, "Generated " + controllers.size()
-				+ " controlles, creating HTML documentation using velocity template.");
+				+ " controllers, creating HTML documentation using velocity template.");
 
 		// TRANSLATE DOC CLASSES INTO HTML DOCUMENTATION USING VELOCITY TEMPLATE
 		String generatedHtml = generateHtmlDocumentation(controllers);
