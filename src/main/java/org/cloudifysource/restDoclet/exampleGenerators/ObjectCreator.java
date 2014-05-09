@@ -1,5 +1,6 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -13,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import net.sf.cglib.beans.BeanGenerator;
+
+import org.cloudifysource.restDoclet.annotations.DocumentSetterMethods;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import org.springframework.cglib.proxy.Enhancer;
@@ -20,6 +24,7 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
 import com.google.common.primitives.Primitives;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
@@ -35,7 +40,7 @@ public class ObjectCreator {
 
   public ObjectCreator() {
     objenesis_ = new ObjenesisStd();
-    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_, listCreator_, mapCreator_);
+    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_, listCreator_, mapCreator_, setterCreator_);
     paramExampleCreators_ = newArrayList(listCreator_, mapCreator_);
   }
 
@@ -248,6 +253,32 @@ public class ObjectCreator {
       HashMap map = new HashMap();
       map.put(createObject(paramClasses[0]), createObject(paramClasses[1]));
       return map;
+    }
+  };
+
+  private ExampleCreator setterCreator_ = new ExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      for (Annotation annotation : cls.getDeclaredAnnotations()) {
+        if (DocumentSetterMethods.class.isAssignableFrom(annotation.getClass())) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
+      BeanGenerator beanGenerator = new BeanGenerator();
+      for (Method m : cls.getDeclaredMethods()) {
+        if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
+          String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
+          beanGenerator.addProperty(name, m.getParameterTypes()[0]);
+        }
+      }
+      Object bean = beanGenerator.create();
+      instantiateFieldsOn(bean);
+      return bean;
     }
   };
 }
