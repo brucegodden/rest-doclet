@@ -270,7 +270,7 @@ public class ObjectCreator {
     @Override
     public Object create(final Class cls) throws IllegalAccessException {
       BeanGenerator beanGenerator = new BeanGenerator();
-      for (Method m : cls.getDeclaredMethods()) {
+      for (Method m : cls.getMethods()) {
         if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
           String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
           beanGenerator.addProperty(name, m.getParameterTypes()[0]);

@@ -1,12 +1,14 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.cloudifysource.restDoclet.annotations.DocumentSetterMethods;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.junit.Before;
@@ -126,6 +128,28 @@ public class ObjectCreatorTest {
     assertThat(listObject, instanceOf(List.class));
   }
 
+  @Test(expected = NoSuchMethodException.class)
+  public void doesNotCreateSetterFieldsIfNotAnnotated() throws IllegalAccessException, NoSuchMethodException {
+    Object objectWithGetter = objectCreator_.createObject(ClassWithSetter.class);
+    objectWithGetter.getClass().getDeclaredMethod("getCount");
+  }
+
+  @Test
+  public void canCreateSetterFields() throws IllegalAccessException {
+    Object objectWithGetters = objectCreator_.createObject(ClassWithSettersAndAnnotation.class);
+    assertHasMethod(objectWithGetters, "getFish", Fish.class);
+    assertHasMethod(objectWithGetters, "getCount", int.class);
+  }
+
+  private void assertHasMethod(final Object getterObject, final String methodName, final Class returnType) {
+    try {
+      Method method = getterObject.getClass().getDeclaredMethod(methodName);
+      assertThat("Wrong return type from " + methodName + "() method", method.getReturnType().equals(returnType));
+    } catch (NoSuchMethodException e) {
+      assertThat("No " + methodName + "() method defined", false);
+    }
+  }
+
   static class EmptyClass {
     public static final EmptyClass NOTHING = new EmptyClass();
   }
@@ -207,6 +231,17 @@ public class ObjectCreatorTest {
 
     public Map<Long, String> getMap() {
       return hashMap_;
+    }
+  }
+
+  static class ClassWithSetter {
+    public void setCount(final int count) {
+    }
+  }
+
+  @DocumentSetterMethods
+  static class ClassWithSettersAndAnnotation extends ClassWithSetter {
+    public void setFish(final Fish fish) {
     }
   }
 }
