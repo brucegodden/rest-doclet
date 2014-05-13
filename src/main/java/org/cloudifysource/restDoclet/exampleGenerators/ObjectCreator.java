@@ -200,7 +200,8 @@ public class ObjectCreator {
     @SuppressWarnings("unchecked")
     @Override
     public Object create(final Class cls) {
-      return Enum.valueOf((Class<? extends Enum>) cls, cls.getEnumConstants()[0].toString());
+      return cls.getEnumConstants()[0];
+//      return Enum.valueOf((Class<? extends Enum>) cls, cls.getEnumConstants()[0].toString());
     }
   };
 
