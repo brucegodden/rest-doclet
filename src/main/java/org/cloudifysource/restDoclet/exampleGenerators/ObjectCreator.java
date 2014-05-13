@@ -1,7 +1,10 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -14,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import net.sf.cglib.beans.BeanGenerator;
 
-import org.cloudifysource.restDoclet.annotations.DocumentSetterMethods;
+import org.apache.commons.lang.StringUtils;
+import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import org.springframework.cglib.proxy.Enhancer;
@@ -40,7 +45,8 @@ public class ObjectCreator {
 
   public ObjectCreator() {
     objenesis_ = new ObjenesisStd();
-    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_, listCreator_, mapCreator_, setterCreator_);
+    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_,
+            arrayCreator_, listCreator_, mapCreator_, commandCreator_);
     paramExampleCreators_ = newArrayList(listCreator_, mapCreator_);
   }
 
@@ -51,7 +57,9 @@ public class ObjectCreator {
       }
     }
 
-    if (isAbstractOrInterface(cls)) return createProxy(cls);
+    if (isAbstractOrInterface(cls)) {
+      return createProxy(cls);
+    }
 
     try {
       Object object = objenesis_.newInstance(cls);
@@ -216,6 +224,21 @@ public class ObjectCreator {
     }
   };
 
+  private ExampleCreator arrayCreator_ = new ExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      return cls.isArray();
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
+      final Class componentClass = cls.getComponentType();
+      Object array = Array.newInstance(componentClass, 1);
+      Array.set(array, 0, createObject(componentClass));
+      return array;
+    }
+  };
+
   private ParametricExampleCreator listCreator_ = new ParametricExampleCreator() {
     @Override
     public boolean match(final Class cls) {
@@ -256,29 +279,82 @@ public class ObjectCreator {
     }
   };
 
-  private ExampleCreator setterCreator_ = new ExampleCreator() {
+  private ExampleCreator commandCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
-      for (Annotation annotation : cls.getDeclaredAnnotations()) {
-        if (DocumentSetterMethods.class.isAssignableFrom(annotation.getClass())) {
-          return true;
-        }
-      }
-      return false;
+      return findAnnotation(DocumentCommand.class, cls.getDeclaredAnnotations()) != null;
     }
 
     @Override
     public Object create(final Class cls) throws IllegalAccessException {
       BeanGenerator beanGenerator = new BeanGenerator();
-      for (Method m : cls.getMethods()) {
-        if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
-          String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
-          beanGenerator.addProperty(name, m.getParameterTypes()[0]);
+      boolean documented = false;
+
+      // Look for a constructor with the JsonProperty annotation. (There can only be one.)
+      for (Constructor c : cls.getConstructors()) {
+        Type[] types = c.getGenericParameterTypes();
+        Annotation[][] annotations = c.getParameterAnnotations();
+        for (int i = 0; i < types.length; i++) {
+          JsonProperty annotation = (JsonProperty) findAnnotation(JsonProperty.class, annotations[i]);
+          if (annotation != null && StringUtils.isNotEmpty(annotation.value())) {
+            addProperty(beanGenerator, annotation.value(), types[i]);
+            documented = true;
+          }
+        }
+        if (documented) {
+          break;
         }
       }
+
+      // If we didn't find an annotated constructor then look for setters and create
+      // equivalent getters.
+      if (!documented) {
+        // Although we would like to do this for the annotated constructor case as well it
+        // causes construction of the object to fail because the constructor doesn't get
+        // called. So we only do it for the setters case.
+        beanGenerator.setSuperclass(cls);
+
+        for (Method m : cls.getMethods()) {
+          if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
+            String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
+            addProperty(beanGenerator, name, m.getGenericParameterTypes()[0]);
+          }
+        }
+      }
+
       Object bean = beanGenerator.create();
       instantiateFieldsOn(bean);
       return bean;
+    }
+
+    private Annotation findAnnotation(final Class annotationClass, final Annotation[] annotations) {
+      for (Annotation annotation : annotations) {
+        if (annotationClass.isAssignableFrom(annotation.getClass())) {
+          return annotation;
+        }
+      }
+      return null;
+    }
+
+    private void addProperty(final BeanGenerator beanGenerator, final String name, final Type type) {
+      if (type instanceof ParameterizedType) {
+        ParameterizedType pType = (ParameterizedType) type;
+        Type[] types = pType.getActualTypeArguments();
+        Type rawType = pType.getRawType();
+        Class rawClass = (Class) rawType;
+        if ((List.class.isAssignableFrom(rawClass) || rawType instanceof GenericArrayType) && types.length == 1) {
+          Object array = Array.newInstance((Class) types[0], 0);
+          beanGenerator.addProperty(name, array.getClass());
+          return;
+        }
+      }
+
+      if (type instanceof Class) {
+        beanGenerator.addProperty(name, (Class) type);
+        return;
+      }
+
+      logger_.warning("Unable to generate getter for '" + name + "' field deduced from constructor/setter");
     }
   };
 }
