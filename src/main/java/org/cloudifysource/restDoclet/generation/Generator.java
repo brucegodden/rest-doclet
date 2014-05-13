@@ -572,6 +572,9 @@ public class Generator {
 		for (Parameter parameter : methodDoc.parameters()) {
 			String name = parameter.name();
       List<AnnotationDesc> annotations = Arrays.asList(parameter.annotations());
+      if (annotations.isEmpty()) {
+        continue;
+      }
       Class<?> clazz = ClassUtils.getClass(parameter.type().qualifiedTypeName());
       String location = paramAnnotationTypeString(annotations);
       DocParameter docParameter = new DocParameter(name, clazz, location, annotationReader.read(annotations, null).requestParamAnnotation().orNull());
