@@ -201,7 +201,6 @@ public class ObjectCreator {
     @Override
     public Object create(final Class cls) {
       return cls.getEnumConstants()[0];
-//      return Enum.valueOf((Class<? extends Enum>) cls, cls.getEnumConstants()[0].toString());
     }
   };
 
