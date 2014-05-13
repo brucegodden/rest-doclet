@@ -8,9 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudifysource.restDoclet.annotations.DocumentSetterMethods;
+import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.isA;
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
@@ -130,15 +132,30 @@ public class ObjectCreatorTest {
 
   @Test(expected = NoSuchMethodException.class)
   public void doesNotCreateSetterFieldsIfNotAnnotated() throws IllegalAccessException, NoSuchMethodException {
-    Object objectWithGetter = objectCreator_.createObject(ClassWithSetter.class);
+    Object objectWithGetter = objectCreator_.createObject(ClassWithSetterButNoAnnotation.class);
     objectWithGetter.getClass().getDeclaredMethod("getCount");
   }
 
   @Test
   public void canCreateSetterFields() throws IllegalAccessException {
-    Object objectWithGetters = objectCreator_.createObject(ClassWithSettersAndAnnotation.class);
+    Object objectWithGetters = objectCreator_.createObject(ClassWithSetters.class);
+    assertThat(objectWithGetters, CoreMatchers.instanceOf(ClassWithSetters.class));
     assertHasMethod(objectWithGetters, "getFish", Fish.class);
     assertHasMethod(objectWithGetters, "getCount", int.class);
+  }
+
+  @Test
+  public void canCreateConstructorFields() throws IllegalAccessException {
+    Object objectWithGetters = objectCreator_.createObject(ClassWithConstructorAnnotation.class);
+    assertHasMethod(objectWithGetters, "getShrimp", Fish.class);
+  }
+
+  @Test
+  public void canCreateArraySetterFields() throws IllegalAccessException {
+    Object objectWithGetters = objectCreator_.createObject(ClassWithListAndArraySetters.class);
+    assertThat(objectWithGetters, CoreMatchers.instanceOf(ClassWithListAndArraySetters.class));
+    assertHasMethod(objectWithGetters, "getBowls", FishBowl[].class);
+    assertHasMethod(objectWithGetters, "getAquariums", Aquarium[].class);
   }
 
   private void assertHasMethod(final Object getterObject, final String methodName, final Class returnType) {
@@ -234,14 +251,29 @@ public class ObjectCreatorTest {
     }
   }
 
-  static class ClassWithSetter {
+  static class ClassWithSetterButNoAnnotation {
     public void setCount(final int count) {
     }
   }
 
-  @DocumentSetterMethods
-  static class ClassWithSettersAndAnnotation extends ClassWithSetter {
+  @DocumentCommand
+  static class ClassWithSetters extends ClassWithSetterButNoAnnotation {
     public void setFish(final Fish fish) {
+    }
+  }
+
+  @DocumentCommand
+  static class ClassWithConstructorAnnotation {
+    public ClassWithConstructorAnnotation(@JsonProperty("shrimp") Fish prawn) {
+    }
+  }
+
+  @DocumentCommand
+  static class ClassWithListAndArraySetters {
+    public void setBowls(final List<FishBowl> bowls) {
+    }
+
+    public void setAquariums(final Aquarium[] aquariums) {
     }
   }
 }
