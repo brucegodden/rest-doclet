@@ -57,8 +57,9 @@ public class ObjectCreator {
       }
     }
 
-    if (isAbstractOrInterface(cls))
+    if (isAbstractOrInterface(cls)) {
       return createProxy(cls);
+    }
 
     try {
       Object object = objenesis_.newInstance(cls);
