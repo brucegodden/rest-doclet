@@ -1,6 +1,7 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,32 +41,32 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void createsAnObject() throws IllegalAccessException {
+  public void createsAnObject() throws Exception {
     assertThat(objectCreator_.createObject(Fish.class), instanceOf(Fish.class));
   }
 
   @Test
-  public void setsAStringFieldOnAnObject() throws IllegalAccessException {
+  public void setsAStringFieldOnAnObject() throws Exception {
     Fish fish = (Fish) objectCreator_.createObject(Fish.class);
     assertThat(fish.getName(), notNullValue());
     assertThat(fish.getName().length(), greaterThan(0));
   }
 
   @Test
-  public void setsAPrimitiveFieldOnAnObject() throws IllegalAccessException {
+  public void setsAPrimitiveFieldOnAnObject() throws Exception {
     Fish fish = (Fish) objectCreator_.createObject(Fish.class);
     assertThat(fish.getCount(), instanceOf(long.class));
   }
 
   @Test
-  public void createsNestedClasses() throws IllegalAccessException {
+  public void createsNestedClasses() throws Exception {
     FishBowl fishBowl = (FishBowl) objectCreator_.createObject(FishBowl.class);
     assertThat(fishBowl.getFish(), instanceOf(Fish.class));
     assertThat(fishBowl.getFish().getName(), notNullValue());
   }
 
   @Test
-  public void createsLists() throws IllegalAccessException, IOException {
+  public void createsLists() throws Exception, IOException {
     Aquarium aquarium = (Aquarium) objectCreator_.createObject(Aquarium.class);
     assertThat(aquarium.getFishes(), instanceOf(List.class));
     assertThat(aquarium.getFishes(), hasSize(greaterThan(0)));
@@ -74,7 +75,7 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void createsListsOfLists() throws IOException, IllegalAccessException {
+  public void createsListsOfLists() throws IOException, Exception {
     SeaWorld seaWorld = (SeaWorld) objectCreator_.createObject(SeaWorld.class);
     new ObjectMapper()
             .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
@@ -82,18 +83,18 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void createClassWithEnumField() throws IllegalAccessException {
+  public void createClassWithEnumField() throws Exception {
     ClassWithEnumField response = (ClassWithEnumField) objectCreator_.createObject(ClassWithEnumField.class);
     assertThat(response.getStatus(), is(ClassWithEnumField.Status.ACTIVATED));
   }
 
   @Test
-  public void createsEmptyClasses() throws IllegalAccessException {
+  public void createsEmptyClasses() throws Exception {
     EmptyClass empty = (EmptyClass) objectCreator_.createObject(EmptyClass.class);
   }
 
   @Test
-  public void canCreateAnAbstractClass() throws IllegalAccessException {
+  public void canCreateAnAbstractClass() throws Exception {
     ClassWithAnAbstractClassInside classInside =
             (ClassWithAnAbstractClassInside) objectCreator_.createObject(ClassWithAnAbstractClassInside.class);
 
@@ -101,19 +102,19 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void canCallAbstractMethods() throws IllegalAccessException {
+  public void canCallAbstractMethods() throws Exception {
     AbstractClass abstractClass = (AbstractClass) objectCreator_.createObject(AbstractClass.class);
     assertThat(abstractClass.getFoo(), notNullValue());
   }
 
   @Test
-  public void canCreateDateField() throws IllegalAccessException {
+  public void canCreateDateField() throws Exception {
     DateClass dateClass = (DateClass) objectCreator_.createObject(DateClass.class);
     assertThat(dateClass.getDate(), not(nullValue()));
   }
 
   @Test
-  public void canCreateAMap() throws IllegalAccessException {
+  public void canCreateAMap() throws Exception {
     ClassWithMap mapClass = (ClassWithMap) objectCreator_.createObject(ClassWithMap.class);
     assertThat(mapClass.getMap(), notNullValue());
     Iterator<Map.Entry<Long, String>> it = mapClass.getMap().entrySet().iterator();
@@ -124,20 +125,20 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void canCreateATopLevelList() throws IllegalAccessException {
+  public void canCreateATopLevelList() throws Exception {
     List<String> stringList = newArrayList("a");
     Object listObject = objectCreator_.createObject(stringList.getClass());
     assertThat(listObject, instanceOf(List.class));
   }
 
   @Test(expected = NoSuchMethodException.class)
-  public void doesNotCreateSetterFieldsIfNotAnnotated() throws IllegalAccessException, NoSuchMethodException {
+  public void doesNotCreateSetterFieldsIfNotAnnotated() throws Exception {
     Object objectWithGetter = objectCreator_.createObject(ClassWithSetterButNoAnnotation.class);
     objectWithGetter.getClass().getDeclaredMethod("getCount");
   }
 
   @Test
-  public void canCreateSetterFields() throws IllegalAccessException {
+  public void canCreateSetterFields() throws Exception {
     Object objectWithGetters = objectCreator_.createObject(ClassWithSetters.class);
     assertThat(objectWithGetters, CoreMatchers.instanceOf(ClassWithSetters.class));
     assertHasMethod(objectWithGetters, "getFish", Fish.class);
@@ -145,26 +146,43 @@ public class ObjectCreatorTest {
   }
 
   @Test
-  public void canCreateConstructorFields() throws IllegalAccessException {
+  public void canCreateConstructorFields() throws Exception {
     Object objectWithGetters = objectCreator_.createObject(ClassWithConstructorAnnotation.class);
     assertHasMethod(objectWithGetters, "getShrimp", Fish.class);
   }
 
   @Test
-  public void canCreateArraySetterFields() throws IllegalAccessException {
+  public void canCreateArraySetterFields() throws Exception {
     Object objectWithGetters = objectCreator_.createObject(ClassWithListAndArraySetters.class);
     assertThat(objectWithGetters, CoreMatchers.instanceOf(ClassWithListAndArraySetters.class));
     assertHasMethod(objectWithGetters, "getBowls", FishBowl[].class);
     assertHasMethod(objectWithGetters, "getAquariums", Aquarium[].class);
   }
 
-  private void assertHasMethod(final Object getterObject, final String methodName, final Class returnType) {
+  @Test
+  public void canCreateMapSetterFields() throws Exception {
+    Object objectWithGetters = objectCreator_.createObject(ClassWithMapSetter.class);
+    assertThat(objectWithGetters, CoreMatchers.instanceOf(ClassWithMapSetter.class));
+    Map map = (Map) assertHasMethod(objectWithGetters, "getSeaWorlds", Map.class, true);
+    assertThat(map.size(), is(1));
+    assertThat(map.values().toArray()[0], CoreMatchers.instanceOf(SeaWorld.class));
+  }
+
+  private void assertHasMethod(final Object getterObject, final String methodName, final Class returnType) throws Exception {
+    assertHasMethod(getterObject, methodName, returnType, false);
+  }
+
+  private Object assertHasMethod(final Object getterObject, final String methodName, final Class returnType, final boolean fetch) throws Exception {
     try {
       Method method = getterObject.getClass().getDeclaredMethod(methodName);
       assertThat("Wrong return type from " + methodName + "() method", method.getReturnType().equals(returnType));
+      if (fetch) {
+        return method.invoke(getterObject);
+      }
     } catch (NoSuchMethodException e) {
       assertThat("No " + methodName + "() method defined", false);
     }
+    return null;
   }
 
   static class EmptyClass {
@@ -274,6 +292,12 @@ public class ObjectCreatorTest {
     }
 
     public void setAquariums(final Aquarium[] aquariums) {
+    }
+  }
+
+  @DocumentCommand
+  static class ClassWithMapSetter {
+    public void setSeaWorlds(final Map<String, SeaWorld> nationalAquaria) {
     }
   }
 }

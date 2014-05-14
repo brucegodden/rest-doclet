@@ -84,8 +84,12 @@ public class ObjectCreator {
   public void instantiateFieldsOn(final Object object) throws IllegalAccessException {
     Class<?> cls = object.getClass();
     for (Field f : cls.getDeclaredFields()) {
+      f.setAccessible(true);
       if (f.getType().equals(cls)) {
         continue; //avoid infinite recursion!
+      }
+      else if (!f.getType().isPrimitive() && f.get(object) != null) {
+        continue; // Ignore non-primitive fields that already have a value.
       }
       else {
         tryToSetField(f, object);
@@ -287,7 +291,7 @@ public class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws IllegalAccessException {
-      BeanGenerator beanGenerator = new BeanGenerator();
+      BeanCreator beanCreator = new BeanCreator();
       boolean documented = false;
 
       // Look for a constructor with the JsonProperty annotation. (There can only be one.)
@@ -297,7 +301,7 @@ public class ObjectCreator {
         for (int i = 0; i < types.length; i++) {
           JsonProperty annotation = (JsonProperty) findAnnotation(JsonProperty.class, annotations[i]);
           if (annotation != null && StringUtils.isNotEmpty(annotation.value())) {
-            addProperty(beanGenerator, annotation.value(), types[i]);
+            beanCreator.addProperty(annotation.value(), types[i]);
             documented = true;
           }
         }
@@ -312,17 +316,17 @@ public class ObjectCreator {
         // Although we would like to do this for the annotated constructor case as well it
         // causes construction of the object to fail because the constructor doesn't get
         // called. So we only do it for the setters case.
-        beanGenerator.setSuperclass(cls);
+        beanCreator.setSuperclass(cls);
 
         for (Method m : cls.getMethods()) {
           if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
             String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
-            addProperty(beanGenerator, name, m.getGenericParameterTypes()[0]);
+            beanCreator.addProperty(name, m.getGenericParameterTypes()[0]);
           }
         }
       }
 
-      Object bean = beanGenerator.create();
+      Object bean = beanCreator.create(ObjectCreator.this);
       instantiateFieldsOn(bean);
       return bean;
     }
@@ -334,27 +338,6 @@ public class ObjectCreator {
         }
       }
       return null;
-    }
-
-    private void addProperty(final BeanGenerator beanGenerator, final String name, final Type type) {
-      if (type instanceof ParameterizedType) {
-        ParameterizedType pType = (ParameterizedType) type;
-        Type[] types = pType.getActualTypeArguments();
-        Type rawType = pType.getRawType();
-        Class rawClass = (Class) rawType;
-        if ((List.class.isAssignableFrom(rawClass) || rawType instanceof GenericArrayType) && types.length == 1) {
-          Object array = Array.newInstance((Class) types[0], 0);
-          beanGenerator.addProperty(name, array.getClass());
-          return;
-        }
-      }
-
-      if (type instanceof Class) {
-        beanGenerator.addProperty(name, (Class) type);
-        return;
-      }
-
-      logger_.warning("Unable to generate getter for '" + name + "' field deduced from constructor/setter");
     }
   };
 }
