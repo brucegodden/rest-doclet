@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
 import com.google.common.primitives.Primitives;
+import sun.reflect.generics.tree.Wildcard;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -46,7 +48,7 @@ public class ObjectCreator {
   public ObjectCreator() {
     objenesis_ = new ObjenesisStd();
     exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_,
-            arrayCreator_, listCreator_, mapCreator_, commandCreator_);
+            arrayCreator_, listCreator_, mapCreator_, commandCreator_, failureCreator_);
     paramExampleCreators_ = newArrayList(listCreator_, mapCreator_);
   }
 
@@ -82,17 +84,16 @@ public class ObjectCreator {
   }
 
   public void instantiateFieldsOn(final Object object) throws IllegalAccessException {
-    Class<?> cls = object.getClass();
-    for (Field f : cls.getDeclaredFields()) {
-      f.setAccessible(true);
-      if (f.getType().equals(cls)) {
-        continue; //avoid infinite recursion!
-      }
-      else if (!f.getType().isPrimitive() && f.get(object) != null) {
-        continue; // Ignore non-primitive fields that already have a value.
-      }
-      else {
-        tryToSetField(f, object);
+    for (Class<?> cls = object.getClass(); cls != null; cls = cls.getSuperclass()) {
+      for (Field f : cls.getDeclaredFields()) {
+        f.setAccessible(true);
+        if (f.getType().equals(cls)) {
+          continue; //avoid infinite recursion!
+        } else if (!f.getType().isPrimitive() && f.get(object) != null) {
+          continue; // Ignore non-primitive fields that already have a value.
+        } else {
+          tryToSetField(f, object);
+        }
       }
     }
   }
@@ -136,16 +137,30 @@ public class ObjectCreator {
     return createParameterizedObject(base, reflectTypesToClasses(genericType.getActualTypeArguments()));
   }
 
-  Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
+  private Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
     Class[] classes = new Class[types.length];
     for (int i = 0; i < types.length; i++) {
-      if (types[i] instanceof Class) {
-        classes[i] = (Class) (types[i]);
+      final Type type = types[i];
+
+      if (type instanceof Class) {
+        classes[i] = (Class) type;
+        continue;
       }
-      else {
-        logger_.warning("nonclass: " + types[i]);
-        classes[i] = String.class;
+
+      if (type instanceof WildcardType) {
+        WildcardType wType = (WildcardType) type;
+        final Type upperType = wType.getUpperBounds()[0];
+        if (upperType instanceof Class) {
+          final Class upperClass = (Class) upperType;
+          if (!upperClass.equals(Object.class)) {
+            classes[i] = upperClass;
+            continue;
+          }
+        }
       }
+
+      logger_.warning("nonclass: " + type);
+      classes[i] = Failure.class;
     }
     return classes;
   }
@@ -337,6 +352,21 @@ public class ObjectCreator {
           return annotation;
         }
       }
+      return null;
+    }
+  };
+
+  private class Failure {
+  }
+
+  private ExampleCreator failureCreator_ = new ExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      return Failure.class.isAssignableFrom(cls);
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
       return null;
     }
   };
