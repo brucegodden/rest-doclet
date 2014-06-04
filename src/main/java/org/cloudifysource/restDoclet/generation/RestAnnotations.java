@@ -6,7 +6,6 @@ import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatuses;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;

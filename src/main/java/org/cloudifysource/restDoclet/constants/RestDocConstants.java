@@ -21,7 +21,6 @@ import java.io.File;
 import org.cloudifysource.restDoclet.docElements.DocAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocPossibleResponseStatuses;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
@@ -54,21 +53,7 @@ public final class RestDocConstants {
 	 *
 	 */
 	public static final String CONTROLLERS_PACKAGE = "org.cloudifysource.rest.controllers";
-	/**
-	 *
-	 */
-	public static final String DSL_RESPONSE_SOURCES_PATH = CLOUDIFY_PATH + File.separator + "dsl"
-			+ File.separator + "src" + File.separator + "main" + File.separator + "java"
-			+ File.separator + "org" + File.separator + "cloudifysource" + File.separator
-			+ "dsl" + File.separator + "rest" + File.separator + "response";
-	/**
-	 *
-	 */
-	public static final String DSL_RESPONSE_PACKAGE = "org.cloudifysource.dsl.rest.response";
-	/**
-	 *
-	 */
-	public static final String SERVICE_CONTROLLER_CLASS_NAME = "org.cloudifysource.rest.controllers.ServiceController";
+
 	/**
 	 *
 	 */
@@ -368,8 +353,6 @@ public final class RestDocConstants {
 				return DocJsonResponseExample.class;
 			case POSSIBLE_RESPONSE_STATUS:
 				return DocResponseStatus.class;
-			case POSSIBLE_RESPONSE_STATUSES:
-				return DocPossibleResponseStatuses.class;
 			case REQUEST_BODY:
 			case RESPONSE_BODY:
 			case PATH_VARIABLE:
