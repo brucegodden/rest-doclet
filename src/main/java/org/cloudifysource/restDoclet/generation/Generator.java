@@ -49,24 +49,17 @@ import org.cloudifysource.restDoclet.docElements.DocMethod;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
 import org.cloudifysource.restDoclet.docElements.DocReturnDetails;
-import org.cloudifysource.restDoclet.exampleGenerators.DocDefaultExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
-import org.cloudifysource.restDoclet.exampleGenerators.IDocExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.ObjectCreator;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Parameter;
-import com.sun.javadoc.ParameterizedType;
 import com.sun.javadoc.RootDoc;
 import com.sun.javadoc.Tag;
-import com.sun.javadoc.Type;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 /**
  * Generates REST API documentation in an HTML form. <br />
@@ -99,10 +92,6 @@ public class Generator {
 	private String docPath;
 	private String version;
 	private String docCssPath;
-	private static String requestExampleGeneratorName;
-	private static String responseExampleGeneratorName;
-	private static IDocExampleGenerator requestExampleGenerator;
-	private static IDocExampleGenerator responseExampleGenerator;
   private static AnnotationReader annotationReader = new AnnotationReader();
   private static ExampleGenerator exampleGenerator = new ExampleGenerator(new ObjectCreator());
 
@@ -172,12 +161,6 @@ public class Generator {
 			} else if (RestDocConstants.DOC_CSS_PATH_FLAG.equals(flagName)) {
 				docCssPath = flagValue;
 				logger.log(Level.INFO, "Updating flag " + flagName + " value = " + flagValue);
-			} else if (RestDocConstants.REQUEST_EXAMPLE_GENERATOR_CLASS_FLAG.equals(flagName)) {
-				requestExampleGeneratorName = flagValue;
-				logger.log(Level.INFO, "Updating flag " + flagName + " value = " + flagValue);
-			} else if (RestDocConstants.RESPONSE_EXAMPLE_GENERATOR_CLASS_FLAG.equals(flagName)) {
-				responseExampleGeneratorName = flagValue;
-				logger.log(Level.INFO, "Updating flag " + flagName + " value = " + flagValue);
 			}
 		}
 
@@ -202,82 +185,6 @@ public class Generator {
 
 		if (StringUtils.isBlank(docCssPath)) {
 			docCssPath = RestDocConstants.DOC_CSS_PATH;
-		}
-
-		initRequestExampleGenerator(requestExampleGeneratorName);
-		logger.log(Level.INFO, "Updating request example generator class to "
-		+ requestExampleGenerator.getClass().getName());
-		initResponseExampleGenerator(responseExampleGeneratorName);
-		logger.log(Level.INFO, "Updating response example generator class to "
-		+ responseExampleGenerator.getClass().getName());
-	}
-
-	private void initRequestExampleGenerator(final String exampleGeneratorName) {
-		IDocExampleGenerator exampleGeneratorClass =
-				getExampleGeneratorClass(
-						IDocExampleGenerator.class,
-						exampleGeneratorName,
-						"request");
-		if (exampleGeneratorClass == null) {
-			requestExampleGenerator = new DocDefaultExampleGenerator();
-		} else {
-			requestExampleGenerator = exampleGeneratorClass;
-		}
-	}
-
-	private void initResponseExampleGenerator(final String exampleGeneratorName) {
-		IDocExampleGenerator exampleGeneratorClass =
-				getExampleGeneratorClass(
-						IDocExampleGenerator.class,
-						exampleGeneratorName,
-						"response");
-		if (exampleGeneratorClass == null) {
-			responseExampleGenerator = new DocDefaultExampleGenerator();
-		} else {
-			responseExampleGenerator = exampleGeneratorClass;
-		}
-	}
-
-	private <T> T getExampleGeneratorClass(
-			final Class<T> expectedInterface,
-			final String exampleGeneratorName,
-			final String exampleType) {
-		if (StringUtils.isBlank(exampleGeneratorName)) {
-			logger.log(Level.INFO,
-					"No custom example generator given, using a default "
-					+ exampleType + " example generator instead.");
-			return null;
-		}
-
-		Class<?> reqExGenClass;
-		try {
-			reqExGenClass = Class.forName(exampleGeneratorName);
-		}	catch (ClassNotFoundException e) {
-			logger.log(Level.WARNING,
-					"Cought ClassNotFoundException when tried to load the " + exampleType
-					+ " example generator class - "
-					+ exampleGeneratorName
-					+ ". Using a default generator instead.");
-			return null;
-		}
-		if (!expectedInterface.isAssignableFrom(reqExGenClass)) {
-			logger.log(Level.WARNING,
-					"The given " + exampleType
-					+ " example generator class [" + exampleGeneratorName
-					+ "] does not implement "  + expectedInterface.getName()
-					+ ". Using a default generator instead.");
-			return null;
-		}
-
-		try {
-			return expectedInterface.cast(reqExGenClass.newInstance());
-		} catch (Exception e) {
-			logger.log(Level.WARNING,
-					"Cought exception - " + e.getClass().getName()
-					+ " when tried to instantiate the " + exampleType
-					+ " example generator class [ " + exampleGeneratorName
-					+ "]. Using a default generator instead.");
-			return null;
 		}
 	}
 
@@ -464,7 +371,6 @@ public class Generator {
     return annotations;
   }
 
-
   private DocHttpMethod[] httpMethodDoc(
           final List<String> methods,
           final MethodDoc methodDoc,
@@ -486,7 +392,6 @@ public class Generator {
 					throws Exception {
 		DocHttpMethod httpMethod = new DocHttpMethod(methodDoc.name(), httpMethodName);
 		httpMethod.setDescription(methodDoc.commentText());
-		httpMethod.setParams(generateParameters(methodDoc));
 		httpMethod.setReturnDetails(generateReturnDetails(methodDoc));
 		generateExamples(methodDoc, httpMethod, restAnnotations);
 		httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
@@ -502,120 +407,14 @@ public class Generator {
 
 	private void generateExamples(final MethodDoc methodDoc, final DocHttpMethod httpMethod, final RestAnnotations annotations)
 					throws Exception {
-		DocJsonRequestExample requestExample = annotations.jsonRequestExample().or(generateRequestExample(httpMethod));
+		DocJsonRequestExample requestExample = annotations.jsonRequestExample()
+            .or(exampleGenerator.exampleRequest(methodDoc));
 		httpMethod.setRequestExample(requestExample.generateJsonRequestBody());
 
 		DocJsonResponseExample responseExample = annotations.jsonResponseExample()
             .or(exampleGenerator.exampleResponse(methodDoc));
 		httpMethod.setResponseExample(responseExample.generateJsonResponseBody());
 	}
-
-	private static DocJsonRequestExample generateRequestExample(final DocHttpMethod httpMethod) {
-		List<DocParameter> params = httpMethod.getParams();
-    Class clazz = null;
-    for (DocParameter docParameter : params) {
-      if (docParameter.getLocation().contains("RequestBody")) {
-        clazz = docParameter.getParamClass();
-        break;
-      }
-    }
-		if (clazz == null) {
-			return DocJsonRequestExample.EMPTY;
-		}
-
-		String generateExample;
-		try {
-			generateExample = requestExampleGenerator.generateExample(clazz);
-			generateExample = Utils.getIndentJson(generateExample);
-		} catch (Exception e) {
-			logger.warning("Could not generate request example for method: " + httpMethod.getMethodSignatureName()
-					+ " with the request parameter type " + clazz.getName()
-					+ ". Exception was: " + e);
-			generateExample = RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
-					+ LINE_SEPARATOR
-					+ "Parameter type: " + clazz.getName() + "."
-					+ LINE_SEPARATOR
-					+ "The exception caught was " + e;
-		}
-    return new DocJsonRequestExample(generateExample, "");
-	}
-
-
-	private static DocJsonResponseExample generateResponseExample(final DocHttpMethod httpMethod) {
-		Type returnType = httpMethod.getReturnDetails().getReturnType();
-		String typeName = returnType.qualifiedTypeName();
-		if (typeName.equals(void.class.getName())) {
-			return DocJsonResponseExample.EMPTY;
-		}
-		String generateExample;
-		try {
-      Class<?> clazz = ClassUtils.getClass(returnType.qualifiedTypeName());
-      generateExample = responseExampleGenerator.generateExample(clazz);
-			generateExample = Utils.getIndentJson(generateExample);
-		} catch (Exception e) {
-			logger.warning("Could not generate response example for method: " + httpMethod.getMethodSignatureName()
-					+ " with the return value type [" + typeName + "]. Exception was: " + e);
-			generateExample = RestDocConstants.FAILED_TO_CREATE_RESPONSE_EXAMPLE
-					+ LINE_SEPARATOR
-					+ "Return value type: " + typeName + "."
-					+ LINE_SEPARATOR
-					+ "The exception caught was " + e;
-		}
-
-		return new DocJsonResponseExample(generateExample, "");
-	}
-
-	private List<DocParameter> generateParameters(final MethodDoc methodDoc) throws ClassNotFoundException,
-          IntrospectionException {
-		List<DocParameter> paramsList = new LinkedList<DocParameter>();
-
-		for (Parameter parameter : methodDoc.parameters()) {
-			String name = parameter.name();
-      List<AnnotationDesc> annotations = Arrays.asList(parameter.annotations());
-      if (annotations.isEmpty()) {
-        continue;
-      }
-      Class<?> clazz = ClassUtils.getClass(parameter.type().qualifiedTypeName());
-      String location = paramAnnotationTypeString(annotations);
-      DocParameter docParameter = new DocParameter(name, clazz, location, annotationReader.read(annotations, null).requestParamAnnotation().orNull());
-      if (location == null || location.isEmpty()) {
-        paramsList.addAll(generateQueryParameters(parameter));
-      }
-      else {
-        paramsList.add(docParameter);
-      }
-			Map<String, String> paramTagsComments = getParamTagsComments(methodDoc);
-			String description = paramTagsComments.get(name);
-			if (description == null) {
-				logger.warning("Missing description of parameter " + name + " of method " + methodDoc.name());
-				description = "";
-			}
-			docParameter.setDescription(description);
-		}
-		return paramsList;
-	}
-
-  private List<DocParameter> generateQueryParameters(Parameter queryParameter) throws IntrospectionException,
-          ClassNotFoundException {
-    Collection<Tag> tags = newArrayList();
-    return new QueryParamGenerator().createParamList(
-            queryParameter,
-            annotationReader.read(Arrays.asList(queryParameter.annotations()), tags).requestParamAnnotation().orNull());
-  }
-
-  /**
-   *
-   * @param methodDoc .
-   * @return The parameters' comments.
-   */
-  private static Map<String, String> getParamTagsComments(final MethodDoc methodDoc) {
-    Map<String, String> paramComments = new HashMap<String, String>();
-    for (ParamTag paramTag : methodDoc.paramTags()) {
-      paramComments.put(paramTag.parameterName(), paramTag.parameterComment());
-    }
-    return paramComments;
-  }
-
 
 	private static DocReturnDetails generateReturnDetails(final MethodDoc methodDoc) {
 		DocReturnDetails returnDetails = new DocReturnDetails(methodDoc.returnType());
@@ -625,12 +424,4 @@ public class Generator {
 		}
 		return returnDetails;
 	}
-
-  private static String paramAnnotationTypeString(List<AnnotationDesc> annotations) {
-    List<String> types = newArrayList();
-    for (AnnotationDesc annotationDesc : annotations) {
-      types.add(annotationDesc.annotationType().simpleTypeName());
-    }
-    return Joiner.on(",").join(types);
-  }
 }

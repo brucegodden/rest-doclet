@@ -37,7 +37,6 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  *
  * @author yael
- *
  */
 public class DocAnnotation {
 	private final String name_;
