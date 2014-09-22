@@ -10,5 +10,7 @@
 .classpath
 .project
 .settings/**
+.gradle/**
 target/**
 out/**
+build/**
