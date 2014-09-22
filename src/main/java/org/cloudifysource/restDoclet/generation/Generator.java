@@ -166,9 +166,15 @@ public class Generator {
 
 		if (!StringUtils.isBlank(velocityTemplatePath)) {
 			isUserDefineTemplatePath = true;
-			int fileNameIndex = velocityTemplatePath.lastIndexOf(File.separator) + 1;
-			velocityTemplateFileName = velocityTemplatePath.substring(fileNameIndex);
-			velocityTemplatePath = velocityTemplatePath.substring(0, fileNameIndex - 1);
+			int fileNameIndex = velocityTemplatePath.lastIndexOf("/");
+      if (fileNameIndex == -1) {
+        fileNameIndex = velocityTemplatePath.lastIndexOf("\\") ;
+      }
+      if (fileNameIndex == -1) {
+        logger.log(Level.SEVERE, "Path/filename split problem for " + velocityTemplatePath);
+      }
+      velocityTemplateFileName = velocityTemplatePath.substring(fileNameIndex + 1);
+			velocityTemplatePath = velocityTemplatePath.substring(0, fileNameIndex);
 		} else {
 			velocityTemplateFileName = RestDocConstants.VELOCITY_TEMPLATE_FILE_NAME;
 			velocityTemplatePath = this.getClass().getClassLoader()

@@ -89,6 +89,8 @@ public class ObjectCreator {
         f.setAccessible(true);
         if (f.getType().equals(cls)) {
           continue; //avoid infinite recursion!
+        } else if (f.getName().startsWith("this$")) {
+          continue; // Avoid recursion caused by owning class reference from inner classes.
         } else if (!f.getType().isPrimitive() && f.get(object) != null) {
           continue; // Ignore non-primitive fields that already have a value.
         } else {

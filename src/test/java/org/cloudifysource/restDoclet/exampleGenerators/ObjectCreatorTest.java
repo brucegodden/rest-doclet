@@ -1,7 +1,6 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
@@ -122,6 +121,13 @@ public class ObjectCreatorTest {
     Map.Entry<Long,String> entry = it.next();
     assertThat(entry.getKey(), isA(Long.class));
     assertThat(entry.getValue(), isA(String.class));
+  }
+
+  @Test
+  public void canCreateANestedInnerClass() throws Exception {
+    ClassWithNestedInnerClass outerClass = (ClassWithNestedInnerClass) objectCreator_.createObject(ClassWithNestedInnerClass.class);
+    assertThat(outerClass.getInner(), notNullValue());
+    assertThat(outerClass.getInner().getCount(), isA(Integer.class));
   }
 
   @Test
@@ -266,6 +272,20 @@ public class ObjectCreatorTest {
 
     public Map<Long, String> getMap() {
       return hashMap_;
+    }
+  }
+
+  static class ClassWithNestedInnerClass {
+    private Inner inner_;
+
+    public Inner getInner() {
+      return inner_;
+    }
+
+    class Inner {
+      public Integer getCount() {
+        return 0;
+      }
     }
   }
 
