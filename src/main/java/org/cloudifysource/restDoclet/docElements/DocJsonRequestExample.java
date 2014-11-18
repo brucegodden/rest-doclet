@@ -17,15 +17,10 @@ package org.cloudifysource.restDoclet.docElements;
 
 import java.io.IOException;
 
-import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
-import com.sun.javadoc.AnnotationDesc;
-
 /**
- *
  * @author yael
- *
  */
 public class DocJsonRequestExample  {
   private String jsonString_;

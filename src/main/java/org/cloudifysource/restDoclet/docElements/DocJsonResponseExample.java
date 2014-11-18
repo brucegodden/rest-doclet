@@ -17,13 +17,6 @@ package org.cloudifysource.restDoclet.docElements;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
-import org.cloudifysource.restDoclet.constants.RestDocConstants;
-import org.cloudifysource.restDoclet.generation.Utils;
-
-import com.google.common.base.Optional;
-import com.sun.javadoc.AnnotationDesc;
-
 /**
  * @author yael
  */
