@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -19,7 +18,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.sf.cglib.beans.BeanGenerator;
 
 import org.apache.commons.lang.StringUtils;
 import org.cloudifysource.restDoclet.annotations.DocumentCommand;
@@ -30,13 +28,10 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
 import com.google.common.primitives.Primitives;
-import sun.reflect.generics.tree.Wildcard;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-/**
- * @author Ed Kimber
- */
+
 public class ObjectCreator {
 
   private Objenesis objenesis_;

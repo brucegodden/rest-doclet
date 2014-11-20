@@ -2,7 +2,6 @@ package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.beans.IntrospectionException;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.*;
 
 import org.apache.commons.lang.ClassUtils;
@@ -21,9 +20,7 @@ import com.sun.javadoc.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-/**
- * @author edward
- */
+
 public class ExampleGenerator {
 
   private final ObjectCreator objectCreator_;
@@ -60,10 +57,10 @@ public class ExampleGenerator {
         break;
       }
     }
-		if (clazz == null) {
-			return DocJsonRequestExample.EMPTY;
-		}
-    Object newInstance = createObjectFromType(methodDoc.returnType());
+    if (clazz == null) {
+      return DocJsonRequestExample.EMPTY;
+    }
+    Object newInstance = objectCreator_.createObject(clazz);
     try {
       String generateExample = new ObjectMapper()
               .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
@@ -73,7 +70,7 @@ public class ExampleGenerator {
     } catch (Exception e) {
       return new DocJsonRequestExample(RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
               + "\n"
-              + "Parameter type: " + methodDoc.returnType() + "."
+              + "Parameter type: " + clazz.getTypeName() + "."
               + "\n"
               + "The exception caught was " + e, "");
     }

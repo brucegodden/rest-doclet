@@ -17,15 +17,10 @@ package org.cloudifysource.restDoclet.docElements;
 
 import java.io.IOException;
 
-import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.generation.Utils;
 
-import com.sun.javadoc.AnnotationDesc;
-
 /**
- *
  * @author yael
- *
  */
 public class DocJsonRequestExample  {
   private String jsonString_;
@@ -41,15 +36,15 @@ public class DocJsonRequestExample  {
     jsonString_ = example;
     comments_ = comments;
   }
-	public String getComments() {
-		return comments_;
-	}
+  public String getComments() {
+    return comments_;
+  }
 
-	/**
-	 * @return The request body in Json format.
-	 * @throws IOException .
-	 */
-	public String generateJsonRequestBody() throws IOException {
-		return Utils.getIndentJson(jsonString_);
-	}
+  /**
+   * @return The request body in Json format.
+   * @throws IOException .
+   */
+  public String generateJsonRequestBody() throws IOException {
+    return Utils.getIndentJson(jsonString_);
+  }
 }
