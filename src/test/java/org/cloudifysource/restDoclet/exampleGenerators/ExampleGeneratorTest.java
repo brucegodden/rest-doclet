@@ -30,7 +30,7 @@ public class ExampleGeneratorTest {
   }
 
   @Test
-  public void generateResponseCanHandleString() throws Exception {
+  public void exampleResponseCanHandleString() throws Exception {
     Type stringType = stringType();
     when(methodDoc_.returnType()).thenReturn(stringType);
     when(objectCreator_.createObject(String.class)).thenReturn("Obiwan");
@@ -42,7 +42,7 @@ public class ExampleGeneratorTest {
   }
 
   @Test
-  public void generateResponseCanHandleListOfStrings() throws Exception {
+  public void exampleResponseCanHandleListOfStrings() throws Exception {
     Type listType = listOfStringsType();
     when(methodDoc_.returnType()).thenReturn(listType);
     when(objectCreator_.createParameterizedObject(List.class, new Class[]{String.class})).thenReturn(new String[]{"Jarjar", "Binks"});
@@ -54,7 +54,7 @@ public class ExampleGeneratorTest {
   }
 
   @Test
-  public void generateRequestHandlesPathVariableParams() throws Exception {
+  public void exampleRequestHandlesPathVariableParams() throws Exception {
     final Parameter stringParam = createParam("string0", stringType(), PathVariable.class);
     when(methodDoc_.parameters()).thenReturn(new Parameter[] {stringParam});
     when(methodDoc_.paramTags()).thenReturn(new ParamTag[0]);
@@ -67,7 +67,7 @@ public class ExampleGeneratorTest {
   }
 
   @Test
-  public void generateRequestHandlesRequestBodyParams() throws Exception {
+  public void exampleRequestHandlesRequestBodyParams() throws Exception {
     final Parameter bodyParam = createParam("body0", ExampleBody.type(), RequestBody.class);
     when(methodDoc_.parameters()).thenReturn(new Parameter[] {bodyParam});
     when(methodDoc_.paramTags()).thenReturn(new ParamTag[0]);

@@ -30,21 +30,21 @@ public class DocJsonResponseExample{
   private String example_;
   private String comments_;
 
-	public DocJsonResponseExample(String example, String comments) {
-		example_ = example;
+  public DocJsonResponseExample(String example, String comments) {
+    example_ = example;
     comments_ = comments;
-	}
+  }
 
-	public String getComments() {
+  public String getComments() {
     return comments_;
-	}
+  }
 
-	/**
-	 *
-	 * @return The response body in Json format.
-	 * @throws IOException .
-	 */
-	public String generateJsonResponseBody() throws IOException {
-		return example_;
-	}
+  /**
+   *
+   * @return The response body in Json format.
+   * @throws IOException .
+   */
+  public String generateJsonResponseBody() throws IOException {
+    return example_;
+  }
 }

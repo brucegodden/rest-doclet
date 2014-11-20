@@ -36,15 +36,15 @@ public class DocJsonRequestExample  {
     jsonString_ = example;
     comments_ = comments;
   }
-	public String getComments() {
-		return comments_;
-	}
+  public String getComments() {
+    return comments_;
+  }
 
-	/**
-	 * @return The request body in Json format.
-	 * @throws IOException .
-	 */
-	public String generateJsonRequestBody() throws IOException {
-		return Utils.getIndentJson(jsonString_);
-	}
+  /**
+   * @return The request body in Json format.
+   * @throws IOException .
+   */
+  public String generateJsonRequestBody() throws IOException {
+    return Utils.getIndentJson(jsonString_);
+  }
 }

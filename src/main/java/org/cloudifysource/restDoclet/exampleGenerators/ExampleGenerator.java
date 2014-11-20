@@ -57,9 +57,9 @@ public class ExampleGenerator {
         break;
       }
     }
-		if (clazz == null) {
-			return DocJsonRequestExample.EMPTY;
-		}
+    if (clazz == null) {
+      return DocJsonRequestExample.EMPTY;
+    }
     Object newInstance = objectCreator_.createObject(clazz);
     try {
       String generateExample = new ObjectMapper()
