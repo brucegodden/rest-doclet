@@ -6,20 +6,24 @@ allprojects {
   targetCompatibility = 1.6
 
   group = 'org.cloudifysource'
-  version = '0.5.26'
+  version = '0.5.27'
 
   task sourceJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
   }
 
+  task createPom << {
+    pom {}.writeTo("$buildDir/libs/pom.xml")
+  }
+
   artifacts {
     archives sourceJar
   }
 
-
   assemble {
     dependsOn sourceJar
+    dependsOn createPom
   }
 }
 
