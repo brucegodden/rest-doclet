@@ -121,8 +121,10 @@ public class ObjectCreatorTest {
     assertThat(it.hasNext(), is(true));
     Map.Entry<Long,String> entry = it.next();
     assertThat(entry.getKey(), notNullValue());
+    assertThat(entry.getKey(), isA(Long.class));
     assertThat(entry.getValue(), notNullValue());
-    assertThat(it.hasNext(), is(false));
+    assertThat(entry.getValue(), isA(String.class));
+    assertThat(it.hasNext(), is(false)); // Only want one example
   }
 
   @Test
@@ -133,7 +135,8 @@ public class ObjectCreatorTest {
     assertThat(it.hasNext(), is(true));
     String entry = it.next();
     assertThat(entry, notNullValue());
-    assertThat(it.hasNext(), is(false));
+    assertThat(entry, isA(String.class));
+    assertThat(it.hasNext(), is(false)); // Only want one example
   }
 
   @Test
