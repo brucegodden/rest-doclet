@@ -9,12 +9,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,6 +22,9 @@ import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Primitives;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -43,8 +41,8 @@ public class ObjectCreator {
   public ObjectCreator() {
     objenesis_ = new ObjenesisStd();
     exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_,
-            arrayCreator_, listCreator_, mapCreator_, commandCreator_, failureCreator_);
-    paramExampleCreators_ = newArrayList(listCreator_, mapCreator_);
+        calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_, commandCreator_, failureCreator_);
+    paramExampleCreators_ = newArrayList(listCreator_, setCreator_, mapCreator_);
   }
 
   public Object createObject(final Class<?> cls) throws IllegalAccessException {
@@ -240,6 +238,18 @@ public class ObjectCreator {
     }
   };
 
+  private ExampleCreator calendarCreator_ = new ExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      return Calendar.class.isAssignableFrom(cls);
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
+      return Calendar.getInstance();
+    }
+  };
+
   private ExampleCreator arrayCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
@@ -269,9 +279,27 @@ public class ObjectCreator {
     @SuppressWarnings("unchecked")
     @Override
     public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
-        LinkedList list = new LinkedList();
-        list.add(createObject(paramClasses[0]));
+        List list = ImmutableList.of(createObject(paramClasses[0]));
         return list;
+    }
+  };
+
+  private ParametricExampleCreator setCreator_ = new ParametricExampleCreator() {
+    @Override
+    public boolean match(final Class cls) {
+      return Set.class.isAssignableFrom(cls);
+    }
+
+    @Override
+    public Object create(final Class cls) throws IllegalAccessException {
+      return this.create(cls, new Class[]{Object.class});
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
+      Set set = ImmutableSet.of(createObject(paramClasses[0]));
+      return set;
     }
   };
 
@@ -289,8 +317,7 @@ public class ObjectCreator {
     @SuppressWarnings("unchecked")
     @Override
     public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
-      HashMap map = new HashMap();
-      map.put(createObject(paramClasses[0]), createObject(paramClasses[1]));
+      Map map = ImmutableMap.of(createObject(paramClasses[0]), createObject(paramClasses[1]));
       return map;
     }
   };

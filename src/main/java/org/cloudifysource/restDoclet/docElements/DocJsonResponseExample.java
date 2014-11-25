@@ -15,17 +15,11 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.io.IOException;
-
 /**
  * @author yael
  */
 public class DocJsonResponseExample{
-  public static final DocJsonResponseExample EMPTY = new DocJsonResponseExample("", "") {
-    public String generateJsonResponseBody() throws IOException {
-      return "response has no body";
-    }
-  };
+  public static final DocJsonResponseExample EMPTY = new DocJsonResponseExample("response has no body", "");
 
   private String example_;
   private String comments_;
@@ -40,11 +34,9 @@ public class DocJsonResponseExample{
   }
 
   /**
-   *
    * @return The response body in Json format.
-   * @throws IOException .
    */
-  public String generateJsonResponseBody() throws IOException {
+  public String generateJsonResponseBody() {
     return example_;
   }
 }

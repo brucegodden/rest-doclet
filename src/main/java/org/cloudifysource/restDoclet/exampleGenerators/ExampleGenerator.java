@@ -3,9 +3,9 @@ package org.cloudifysource.restDoclet.exampleGenerators;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang.ClassUtils;
-import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocParameter;
@@ -22,6 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 
 public class ExampleGenerator {
+  private static final Logger LOGGER = Logger.getLogger(ExampleGenerator.class.getName());
 
   private final ObjectCreator objectCreator_;
   private final AnnotationReader annotationReader = new AnnotationReader();
@@ -30,49 +31,41 @@ public class ExampleGenerator {
     objectCreator_ = objectCreator;
   }
 
-  public DocJsonResponseExample exampleResponse(final MethodDoc methodDoc) throws ClassNotFoundException, IllegalAccessException, IOException {
-    Object newInstance = createObjectFromType(methodDoc.returnType());
-
+  public DocJsonResponseExample exampleResponse(final MethodDoc methodDoc) throws Exception {
     try {
+      Object newInstance = createObjectFromType(methodDoc.returnType());
+
       String generateExample = new ObjectMapper()
               .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
               .writeValueAsString(newInstance);
 
       return new DocJsonResponseExample(Utils.getIndentJson(generateExample), "");
     } catch (Exception e) {
-      return new DocJsonResponseExample(RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
-                        + "\n"
-                        + "Parameter type: " + methodDoc.returnType() + "."
-                        + "\n"
-                        + "The exception caught was " + e, "");
+      throw new Exception("Failed to create response example for " + methodDoc.qualifiedName(), e);
     }
   }
 
-  public DocJsonRequestExample exampleRequest(final MethodDoc methodDoc) throws IllegalAccessException, ClassNotFoundException, IntrospectionException {
-    List<DocParameter> params = generateParameters(methodDoc);
-    Class clazz = null;
-    for (DocParameter docParameter : params) {
-      if (docParameter.getLocation().contains("RequestBody")) {
-        clazz = docParameter.getParamClass();
-        break;
-      }
-    }
-    if (clazz == null) {
-      return DocJsonRequestExample.EMPTY;
-    }
-    Object newInstance = objectCreator_.createObject(clazz);
+  public DocJsonRequestExample exampleRequest(final MethodDoc methodDoc) throws Exception {
     try {
+      List<DocParameter> params = generateParameters(methodDoc);
+      Class clazz = null;
+      for (DocParameter docParameter : params) {
+        if (docParameter.getLocation().contains("RequestBody")) {
+          clazz = docParameter.getParamClass();
+          break;
+        }
+      }
+      if (clazz == null) {
+        return DocJsonRequestExample.EMPTY;
+      }
+      Object newInstance = objectCreator_.createObject(clazz);
       String generateExample = new ObjectMapper()
               .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
               .writeValueAsString(newInstance);
 
       return new DocJsonRequestExample(Utils.getIndentJson(generateExample), "");
     } catch (Exception e) {
-      return new DocJsonRequestExample(RestDocConstants.FAILED_TO_CREATE_REQUEST_EXAMPLE + "."
-              + "\n"
-              + "Parameter type: " + clazz.getTypeName() + "."
-              + "\n"
-              + "The exception caught was " + e, "");
+      throw new Exception("Failed to create request example for " + methodDoc.qualifiedName(), e);
     }
   }
 

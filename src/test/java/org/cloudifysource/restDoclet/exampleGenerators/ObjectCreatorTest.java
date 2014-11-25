@@ -2,11 +2,7 @@ package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -27,9 +23,7 @@ import static org.hamcrest.Matchers.nullValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import static com.google.common.collect.Lists.newArrayList;
 
-/**
- * @author edward
- */
+
 public class ObjectCreatorTest {
 
   private ObjectCreator objectCreator_;
@@ -90,6 +84,7 @@ public class ObjectCreatorTest {
   @Test
   public void createsEmptyClasses() throws Exception {
     EmptyClass empty = (EmptyClass) objectCreator_.createObject(EmptyClass.class);
+    assertThat(empty, notNullValue());
   }
 
   @Test
@@ -108,8 +103,14 @@ public class ObjectCreatorTest {
 
   @Test
   public void canCreateDateField() throws Exception {
-    DateClass dateClass = (DateClass) objectCreator_.createObject(DateClass.class);
-    assertThat(dateClass.getDate(), not(nullValue()));
+    ClassWithDate dateClass = (ClassWithDate) objectCreator_.createObject(ClassWithDate.class);
+    assertThat(dateClass.getDate(), notNullValue());
+  }
+
+  @Test
+  public void canCreateCalendarField() throws Exception {
+    ClassWithCalendar calendarClass = (ClassWithCalendar) objectCreator_.createObject(ClassWithCalendar.class);
+    assertThat(calendarClass.getCalendar(), notNullValue());
   }
 
   @Test
@@ -119,8 +120,23 @@ public class ObjectCreatorTest {
     Iterator<Map.Entry<Long, String>> it = mapClass.getMap().entrySet().iterator();
     assertThat(it.hasNext(), is(true));
     Map.Entry<Long,String> entry = it.next();
+    assertThat(entry.getKey(), notNullValue());
     assertThat(entry.getKey(), isA(Long.class));
+    assertThat(entry.getValue(), notNullValue());
     assertThat(entry.getValue(), isA(String.class));
+    assertThat(it.hasNext(), is(false)); // Only want one example
+  }
+
+  @Test
+  public void canCreateASet() throws Exception {
+    ClassWithSet setClass = (ClassWithSet) objectCreator_.createObject(ClassWithSet.class);
+    assertThat(setClass.getSet(), notNullValue());
+    Iterator<String> it = setClass.getSet().iterator();
+    assertThat(it.hasNext(), is(true));
+    String entry = it.next();
+    assertThat(entry, notNullValue());
+    assertThat(entry, isA(String.class));
+    assertThat(it.hasNext(), is(false)); // Only want one example
   }
 
   @Test
@@ -252,14 +268,14 @@ public class ObjectCreatorTest {
       PENDING
     }
 
-    private Status status_ = Status.ACTIVATED;
+    private Status status_;
 
     public Status getStatus() {
       return status_;
     }
   }
 
-  public static class DateClass {
+  public static class ClassWithDate {
     private Date date_;
 
     public Date getDate() {
@@ -267,11 +283,27 @@ public class ObjectCreatorTest {
     }
   }
 
+  public static class ClassWithCalendar {
+    private Calendar calendar_;
+
+    public Calendar getCalendar() {
+      return calendar_;
+    }
+  }
+
   public static class ClassWithMap {
-    Map<Long, String> hashMap_ = new HashMap<Long,String>();
+    Map<Long, String> hashMap_ ;
 
     public Map<Long, String> getMap() {
       return hashMap_;
+    }
+  }
+
+  public static class ClassWithSet {
+    Set<String> hashSet_;
+
+    public Set<String> getSet() {
+      return hashSet_;
     }
   }
 

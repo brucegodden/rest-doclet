@@ -15,10 +15,6 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
-import java.io.IOException;
-
-import org.cloudifysource.restDoclet.generation.Utils;
-
 /**
  * @author yael
  */
@@ -26,11 +22,7 @@ public class DocJsonRequestExample  {
   private String jsonString_;
   private String comments_;
 
-  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("", "") {
-    public String generateJsonRequestBody() throws IOException {
-      return "request has no body";
-    }
-  };
+  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("request has no body", "");
 
   public DocJsonRequestExample(String example, String comments) {
     jsonString_ = example;
@@ -42,9 +34,8 @@ public class DocJsonRequestExample  {
 
   /**
    * @return The request body in Json format.
-   * @throws IOException .
    */
-  public String generateJsonRequestBody() throws IOException {
-    return Utils.getIndentJson(jsonString_);
+  public String generateJsonRequestBody() {
+    return jsonString_;
   }
 }
