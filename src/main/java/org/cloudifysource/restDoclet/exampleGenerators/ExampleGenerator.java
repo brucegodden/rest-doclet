@@ -1,31 +1,20 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
-import java.beans.IntrospectionException;
-import java.io.IOException;
-import java.util.*;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.ClassUtils;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocParameter;
-import org.cloudifysource.restDoclet.generation.AnnotationReader;
-import org.cloudifysource.restDoclet.generation.QueryParamGenerator;
 import org.cloudifysource.restDoclet.generation.Utils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
-import com.google.common.base.Joiner;
 import com.sun.javadoc.*;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 
 public class ExampleGenerator {
   private static final Logger LOGGER = Logger.getLogger(ExampleGenerator.class.getName());
 
   private final ObjectCreator objectCreator_;
-  private final AnnotationReader annotationReader = new AnnotationReader();
 
   public ExampleGenerator(ObjectCreator objectCreator) {
     objectCreator_ = objectCreator;
@@ -47,26 +36,32 @@ public class ExampleGenerator {
 
   public DocJsonRequestExample exampleRequest(final MethodDoc methodDoc) throws Exception {
     try {
-      List<DocParameter> params = generateParameters(methodDoc);
-      Class clazz = null;
-      for (DocParameter docParameter : params) {
-        if (docParameter.getLocation().contains("RequestBody")) {
-          clazz = docParameter.getParamClass();
-          break;
-        }
-      }
-      if (clazz == null) {
+      final Parameter requestBodyParameter = getRequestBodyParameter(methodDoc);
+      if (requestBodyParameter == null) {
         return DocJsonRequestExample.EMPTY;
       }
-      Object newInstance = objectCreator_.createObject(clazz);
-      String generateExample = new ObjectMapper()
+
+      final Object newInstance = createObjectFromType(requestBodyParameter.type());
+      final String generateExample = new ObjectMapper()
               .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
               .writeValueAsString(newInstance);
 
       return new DocJsonRequestExample(Utils.getIndentJson(generateExample), "");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new Exception("Failed to create request example for " + methodDoc.qualifiedName(), e);
     }
+  }
+
+  private Parameter getRequestBodyParameter(final MethodDoc methodDoc) {
+    for (final Parameter param : methodDoc.parameters()) {
+      for (final AnnotationDesc annotationDesc : param.annotations()) {
+        if (annotationDesc.annotationType().simpleTypeName().contains("RequestBody")) {
+          return param;
+        }
+      }
+    }
+    return null;
   }
 
   public Object createObjectFromType(com.sun.javadoc.Type type) throws ClassNotFoundException, IllegalAccessException {
@@ -107,62 +102,5 @@ public class ExampleGenerator {
     else {
       return type.qualifiedTypeName();
     }
-  }
-
-  private List<DocParameter> generateParameters(final MethodDoc methodDoc) throws ClassNotFoundException,
-          IntrospectionException {
-    List<DocParameter> paramsList = new LinkedList<DocParameter>();
-
-    for (Parameter parameter : methodDoc.parameters()) {
-      String name = parameter.name();
-      List<AnnotationDesc> annotations = Arrays.asList(parameter.annotations());
-      if (annotations.isEmpty()) {
-        continue;
-      }
-      Class<?> clazz = ClassUtils.getClass(parameter.type().qualifiedTypeName());
-      String location = paramAnnotationTypeString(annotations);
-      DocParameter docParameter = new DocParameter(name, clazz, location, annotationReader.read(annotations, null).requestParamAnnotation().orNull());
-      if (location == null || location.isEmpty()) {
-        paramsList.addAll(generateQueryParameters(parameter));
-      }
-      else {
-        paramsList.add(docParameter);
-      }
-      Map<String, String> paramTagsComments = getParamTagsComments(methodDoc);
-      String description = paramTagsComments.get(name);
-      if (description == null) {
-//        logger.warning("Missing description of parameter " + name + " of method " + methodDoc.name());
-        description = "";
-      }
-      docParameter.setDescription(description);
-    }
-    return paramsList;
-  }
-
-  private List<DocParameter> generateQueryParameters(Parameter queryParameter) throws IntrospectionException,
-          ClassNotFoundException {
-    Collection<Tag> tags = newArrayList();
-    return new QueryParamGenerator().createParamList(
-            queryParameter,
-            annotationReader.read(Arrays.asList(queryParameter.annotations()), tags).requestParamAnnotation().orNull());
-  }
-
- /*
-  * @return The parameters' comments.
-  */
-  private static Map<String, String> getParamTagsComments(final MethodDoc methodDoc) {
-    Map<String, String> paramComments = new HashMap<String, String>();
-    for (ParamTag paramTag : methodDoc.paramTags()) {
-      paramComments.put(paramTag.parameterName(), paramTag.parameterComment());
-    }
-    return paramComments;
-  }
-
-  private static String paramAnnotationTypeString(List<AnnotationDesc> annotations) {
-    List<String> types = newArrayList();
-    for (AnnotationDesc annotationDesc : annotations) {
-      types.add(annotationDesc.annotationType().simpleTypeName());
-    }
-    return Joiner.on(",").join(types);
   }
 }
