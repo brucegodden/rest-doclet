@@ -5,6 +5,8 @@ rest-doclet
 
 The purpose of this README file is to explain how one can easily generate Spring mvc based REST API documentation.
 
+For specific information on how to set up rest-doclet for Mediagraft, see [the Mediagraft Wiki](http://wiki.blinkboxmusic.com/core/mediagraft/restdoclet).
+
 The rest-doclet enables automatic generation of documentation from REST service source code, and displays spring-annotated service operations, types and associated Javadoc.
 The detection of Spring artifacts is based on the presence of Spring annotations on Java classes and methods.
 

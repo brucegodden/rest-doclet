@@ -1,5 +1,6 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
@@ -13,8 +14,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
 
+import com.google.common.collect.ImmutableList;
 import com.sun.javadoc.*;
-
 
 public class ExampleGeneratorTest {
 
@@ -82,6 +83,24 @@ public class ExampleGeneratorTest {
     assertThat(example.getComments(), is(""));
   }
 
+  @Test
+  public void exampleRequestHandlesRequestBodyParamsList() throws Exception {
+    final Parameter bodyParam = createParam("body0", ExampleBodyList.type(), RequestBody.class);
+    when(methodDoc_.parameters()).thenReturn(new Parameter[] {bodyParam});
+    when(objectCreator_.createParameterizedObject(ArrayList.class, new Class[] { ExampleBody.class } ))
+        .thenReturn(ImmutableList.of(new ExampleBody()));
+
+    final DocJsonRequestExample example = exampleGenerator_.exampleRequest(methodDoc_);
+
+    final String stripped = example.generateJsonRequestBody().replaceAll("\\s+", "");
+    assertThat("Expect JSON array", stripped.charAt(0), is('['));
+    assertThat("Expect JSON array", stripped.charAt(stripped.length() - 1), is(']'));
+    assertThat("Expect id to be set", stripped.contains("\"id\":12345"));
+    assertThat("Expect count to be set", stripped.contains("\"count\":null"));
+    assertThat("Expect names to be set", stripped.contains("\"names\":[\"Example\",\"Names\"]"));
+    assertThat(example.getComments(), is(""));
+  }
+
   private Type stringType() {
     Type type = mock(Type.class);
     when(type.qualifiedTypeName()).thenReturn(String.class.getName());
@@ -132,6 +151,21 @@ public class ExampleGeneratorTest {
 
     public String[] getNames() {
       return new String[] {"Example", "Names"};
+    }
+  }
+
+  private static class ExampleBodyList {
+
+    private static Type type() {
+      final Type[] typeArguments = new Type[] { ExampleBody.type() };
+
+      final ParameterizedType parameterizedType = mock(ParameterizedType.class);
+      when(parameterizedType.typeArguments()).thenReturn(typeArguments);
+
+      final Type type = mock(Type.class);
+      when(type.qualifiedTypeName()).thenReturn(ArrayList.class.getName());
+      when(type.asParameterizedType()).thenReturn(parameterizedType);
+      return type;
     }
   }
 }
