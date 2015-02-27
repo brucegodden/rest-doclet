@@ -21,43 +21,46 @@ package org.cloudifysource.restDoclet.exampleGenerators;
  * @since 0.5.0
  */
 public final class PrimitiveExampleValues {
-	
-	private PrimitiveExampleValues() {
-		
-	}
-	
-	// These gets initialized to their default values
-	private static final boolean DEFAULT_BOOLEAN = true;
-	private static final byte DEFAULT_BYTE = 0;
-	private static final short DEFAULT_SHORT = 0;
-	private static final int DEFAULT_INT = 0;
-	private static final long DEFAULT_LONG = 0;
-	private static final float DEFAULT_FLOAT = 0;
-	private static final double DEFAULT_DOUBLE = 0;
-	
-	/**
-	 * Returns an example value of a primitive type.
-	 * @param clazz the primitive type.
-	 * @return an example value of the given primitive type.
-	 */
-	public static Object getValue(final Class<?> clazz) {
-	        if (clazz.equals(boolean.class)) {
-	            return DEFAULT_BOOLEAN;
-	        } else if (clazz.equals(byte.class)) {
-	            return DEFAULT_BYTE;
-	        } else if (clazz.equals(short.class)) {
-	            return DEFAULT_SHORT;
-	        } else if (clazz.equals(int.class)) {
-	            return DEFAULT_INT;
-	        } else if (clazz.equals(long.class)) {
-	            return DEFAULT_LONG;
-	        } else if (clazz.equals(float.class)) {
-	            return DEFAULT_FLOAT;
-	        } else if (clazz.equals(double.class)) {
-	            return DEFAULT_DOUBLE;
-	        } else {
-	            throw new IllegalArgumentException(
-	                "Class type " + clazz + " not supported");
-	        }
-	}
+  
+  private PrimitiveExampleValues() {
+    
+  }
+  
+  // These gets initialized to their default values
+  private static final boolean DEFAULT_BOOLEAN = true;
+  private static final byte DEFAULT_BYTE = 0;
+  private static final short DEFAULT_SHORT = 0;
+  private static final int DEFAULT_INT = 0;
+  private static final long DEFAULT_LONG = 0;
+  private static final float DEFAULT_FLOAT = 0;
+  private static final double DEFAULT_DOUBLE = 0;
+  private static final char DEFAULT_CHAR = 'a';
+  
+  /**
+   * Returns an example value of a primitive type.
+   * @param clazz the primitive type.
+   * @return an example value of the given primitive type.
+   */
+  public static Object getValue(final Class<?> clazz) {
+    if (clazz.equals(boolean.class)) {
+      return DEFAULT_BOOLEAN;
+    } else if (clazz.equals(byte.class)) {
+      return DEFAULT_BYTE;
+    } else if (clazz.equals(short.class)) {
+      return DEFAULT_SHORT;
+    } else if (clazz.equals(int.class)) {
+      return DEFAULT_INT;
+    } else if (clazz.equals(long.class)) {
+      return DEFAULT_LONG;
+    } else if (clazz.equals(float.class)) {
+      return DEFAULT_FLOAT;
+    } else if (clazz.equals(double.class)) {
+      return DEFAULT_DOUBLE;
+    } else if (clazz.equals(char.class)) {
+      return DEFAULT_CHAR;
+    } else {
+      throw new IllegalArgumentException(
+          "Class type " + clazz + " not supported");
+    }
+  }
 }
