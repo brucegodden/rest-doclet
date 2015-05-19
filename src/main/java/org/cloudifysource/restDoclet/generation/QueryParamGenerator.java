@@ -4,10 +4,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.cloudifysource.restDoclet.docElements.DocParameter;
 import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
@@ -35,25 +32,56 @@ public class QueryParamGenerator {
     });
   }
 
+  final Map<String, String> paramsDocumentation;
+
+  public QueryParamGenerator(final RestAnnotations restAnnotations) {
+    paramsDocumentation = restAnnotations.paramsDocumentation();
+  }
+
   public List<DocParameter> createParamList(Parameter parameter, DocRequestParamAnnotation annotation) throws ClassNotFoundException, IntrospectionException {
     List<DocParameter> parameters = new ArrayList<DocParameter>();
     Type type = parameter.type();
     if (type.isPrimitive() || wrapperClassNames.contains(type.qualifiedTypeName())) {
-      Class<?> clazz = ClassUtils.getClass(type.qualifiedTypeName());
-      parameters.add(new DocParameter(parameter.name(), clazz, "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), type.qualifiedTypeName(), "RequestParam", annotation));
     }
     else if (List.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), List.class, "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), "List<?>", "RequestParam", annotation));
     }
     else if (Set.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), Set.class, "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), "Set<?>", "RequestParam", annotation));
     }
     else {
       BeanInfo info = Introspector.getBeanInfo(Class.forName(type.qualifiedTypeName()), Object.class);
       for (PropertyDescriptor prop : info.getPropertyDescriptors()) {
-        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType(), "RequestParam", annotation));
+        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType().toString(), "RequestParam", annotation));
       }
     }
     return parameters;
+  }
+
+  public DocParameter createParam(Parameter parameter, DocRequestParamAnnotation annotation) throws ClassNotFoundException, IntrospectionException {
+    final String typeName;
+    final Type type = parameter.type();
+
+    if (type.isPrimitive() || wrapperClassNames.contains(type.qualifiedTypeName())) {
+      typeName = type.simpleTypeName();
+    }
+    else if (List.class.getName().equals(type.qualifiedTypeName())) {
+      typeName = "List<?>";
+    }
+    else if (Set.class.getName().equals(type.qualifiedTypeName())) {
+      typeName = "Set<?>";
+    }
+    else {
+      typeName = type.qualifiedTypeName().startsWith("java.lang.")
+          ? type.simpleTypeName()
+          : type.qualifiedTypeName();
+    }
+
+    final DocParameter docParameter = new DocParameter(parameter.name(), typeName, "RequestParam", annotation);
+    if (paramsDocumentation.containsKey(parameter.name())) {
+      docParameter.setDescription(paramsDocumentation.get(parameter.name()));
+    }
+    return docParameter;
   }
 }

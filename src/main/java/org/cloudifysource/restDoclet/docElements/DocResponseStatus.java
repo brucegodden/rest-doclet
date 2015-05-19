@@ -51,6 +51,6 @@ public class DocResponseStatus {
   }
 
   private String textAfterFirstWord(String text) {
-    return text.contains(" ") ? text.substring(text.indexOf(" ")) : text;
+    return text.contains(" ") ? text.substring(text.indexOf(" ")).trim() : text;
   }
 }

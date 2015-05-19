@@ -22,15 +22,15 @@ package org.cloudifysource.restDoclet.docElements;
  */
 public class DocParameter {
 	private final String name_;
-  private final Class clazz_;
+  private final String type_;
   private final String location_;
 
 	private DocRequestParamAnnotation requestParamAnnotation_;
   private String description_;
 
-  public DocParameter(final String name, final Class clazz, String location, DocRequestParamAnnotation annotation) {
+  public DocParameter(final String name, final String type, String location, DocRequestParamAnnotation annotation) {
 		name_ = name;
-    clazz_ = clazz;
+    type_ = type;
     location_ = location;
     requestParamAnnotation_ = annotation;
   }
@@ -39,8 +39,8 @@ public class DocParameter {
 		return name_;
 	}
 
-  public Class getParamClass() {
-    return clazz_;
+  public String getType() {
+    return type_;
   }
 
 	public String getDescription() {

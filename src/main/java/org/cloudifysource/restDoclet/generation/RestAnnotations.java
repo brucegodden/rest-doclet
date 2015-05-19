@@ -1,6 +1,7 @@
 package org.cloudifysource.restDoclet.generation;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
@@ -23,5 +24,6 @@ public interface RestAnnotations {
   public Optional<DocJsonRequestExample> jsonRequestExample();
   public Optional<DocJsonResponse> responseBody();
   public Collection<DocResponseStatus> responseStatusCodes();
+  public Map<String, String> paramsDocumentation();
   public AnnotationDesc getAnnotation(RestDocConstants.DocAnnotationTypes type);
 }

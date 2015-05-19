@@ -1,5 +1,11 @@
 package org.cloudifysource.restDoclet.generation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,13 +14,18 @@ import static org.cloudifysource.restDoclet.constants.RestDocConstants.REQUEST_P
 import static org.cloudifysource.restDoclet.constants.RestDocConstants.REST_CONTROLLER_ANNOTATION;
 import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.REST_CONTROLLER;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.AnnotationTypeDoc;
+import com.sun.javadoc.ParamTag;
+import com.sun.javadoc.Tag;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 
@@ -22,6 +33,12 @@ import static com.google.common.collect.Lists.newArrayList;
  * @author edward
  */
 public class AnnotationReaderTest {
+
+  private static final int RESPONSE_CODE = 123;
+  private static final String RESPONSE_DESCRIPTION = "Response description";
+
+  private static final String PARAM_NAME = "paramName";
+  private static final String PARAM_DESCRIPTION = "Param description";
 
   private AnnotationReader reader_;
 
@@ -32,20 +49,49 @@ public class AnnotationReaderTest {
 
   @Test
   public void readsRequestMapping() {
-    AnnotationDesc annotationDesc = createAnnotation(REQUEST_MAPPING_ANNOTATION);
-    assertThat(reader_.read(newArrayList(annotationDesc), null).requestMappingAnnotation(), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REQUEST_MAPPING_ANNOTATION), null).requestMappingAnnotation(), not(nullValue()));
   }
 
   @Test
   public void readsRequestParam() {
-    AnnotationDesc annotationDesc = createAnnotation(REQUEST_PARAMS_ANNOTATION);
-    assertThat(reader_.read(newArrayList(annotationDesc), null).requestParamAnnotation(), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REQUEST_PARAMS_ANNOTATION), null).requestParamAnnotation(), not(nullValue()));
   }
 
   @Test
   public void readsRestController() {
-    AnnotationDesc annotationDesc = createAnnotation(REST_CONTROLLER_ANNOTATION);
-    assertThat(reader_.read(newArrayList(annotationDesc), null).getAnnotation(REST_CONTROLLER), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REST_CONTROLLER_ANNOTATION), null).getAnnotation(REST_CONTROLLER), not(nullValue()));
+  }
+
+  @Test
+  public void fetchesResponseDocumentation() {
+    final Collection<Tag> tags = newArrayList(createResponseTag());
+
+    final Collection<DocResponseStatus> result = reader_.read(createAnnotations(), tags).responseStatusCodes();
+
+    assertThat(result, not(nullValue()));
+    assertThat(result.size(), is(1));
+    DocResponseStatus status = result.iterator().next();
+    assertThat(status.getCode(), is(RESPONSE_CODE));
+    assertThat(status.getDescription(), is(RESPONSE_DESCRIPTION));
+  }
+
+  @Test
+  public void fetchesParamDocumentation() {
+    final Collection<Tag> tags = newArrayList(createParamTag());
+
+    final Map<String, String> result = reader_.read(createAnnotations(), tags).paramsDocumentation();
+
+    assertThat(result, not(nullValue()));
+    assertThat(result.keySet(), contains(PARAM_NAME));
+    assertThat(result.get(PARAM_NAME), is(PARAM_DESCRIPTION));
+  }
+
+  private List<AnnotationDesc> createAnnotations(final String... annotations) {
+    List<AnnotationDesc> descs = newArrayList();
+    for (String annotation : annotations) {
+      descs.add(createAnnotation(annotation));
+    }
+    return descs;
   }
 
   private AnnotationDesc createAnnotation(String typeName) {
@@ -55,5 +101,20 @@ public class AnnotationReaderTest {
     when(annotationDesc.annotationType()).thenReturn(annotationType);
     when(annotationType.typeName()).thenReturn(typeName);
     return annotationDesc;
+  }
+
+  private Tag createResponseTag() {
+    final Tag tag = mock(Tag.class);
+    when(tag.name()).thenReturn("@ResponseCode");
+    when(tag.text()).thenReturn(RESPONSE_CODE + " " + RESPONSE_DESCRIPTION);
+    return tag;
+  }
+
+  private Tag createParamTag() {
+    final ParamTag tag = mock(ParamTag.class);
+    when(tag.name()).thenReturn("@param");
+    when(tag.parameterName()).thenReturn(PARAM_NAME);
+    when(tag.parameterComment()).thenReturn(PARAM_DESCRIPTION);
+    return tag;
   }
 }
