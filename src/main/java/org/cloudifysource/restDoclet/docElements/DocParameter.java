@@ -23,15 +23,13 @@ package org.cloudifysource.restDoclet.docElements;
 public class DocParameter {
 	private final String name_;
   private final String type_;
-  private final String location_;
+	private final DocRequestParamAnnotation requestParamAnnotation_;
 
-	private DocRequestParamAnnotation requestParamAnnotation_;
   private String description_;
 
-  public DocParameter(final String name, final String type, String location, DocRequestParamAnnotation annotation) {
+  public DocParameter(final String name, final String type, final DocRequestParamAnnotation annotation) {
 		name_ = name;
     type_ = type;
-    location_ = location;
     requestParamAnnotation_ = annotation;
   }
 
@@ -48,7 +46,7 @@ public class DocParameter {
 	}
 
   public String getRequestParamAnnotation() {
-    return requestParamAnnotation_ != null ? requestParamAnnotation_.getValue() : "";
+    return requestParamAnnotation_.getValue();
   }
 
 	/**
@@ -68,11 +66,11 @@ public class DocParameter {
 	 * @return The value of the required attribute of the RequestParam annotation.
 	 */
 	public boolean isRequired() {
-    return requestParamAnnotation_ == null || requestParamAnnotation_.isRequired();
+    return requestParamAnnotation_.getDefaultValue() == null && requestParamAnnotation_.isRequired();
   }
 
 	public String getLocation() {
-		return location_;
+		return requestParamAnnotation_.getName();
 	}
 
 	/**
@@ -80,9 +78,6 @@ public class DocParameter {
 	 * @return The value of the defaultValue attribute of the RequestParam annotation.
 	 */
 	public String getDefaultValue() {
-		if (requestParamAnnotation_ != null) {
-			return requestParamAnnotation_.getDefaultValue();
-		}
-		return null;
+		return requestParamAnnotation_.getDefaultValue();
 	}
 }

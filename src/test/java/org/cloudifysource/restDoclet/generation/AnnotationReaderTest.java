@@ -1,18 +1,16 @@
 package org.cloudifysource.restDoclet.generation;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.cloudifysource.restDoclet.constants.RestDocConstants.REQUEST_MAPPING_ANNOTATION;
-import static org.cloudifysource.restDoclet.constants.RestDocConstants.REQUEST_PARAMS_ANNOTATION;
-import static org.cloudifysource.restDoclet.constants.RestDocConstants.REST_CONTROLLER_ANNOTATION;
-import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.REST_CONTROLLER;
+import static org.cloudifysource.restDoclet.constants.RestDocConstants.*;
+import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.not;
@@ -49,17 +47,26 @@ public class AnnotationReaderTest {
 
   @Test
   public void readsRequestMapping() {
-    assertThat(reader_.read(createAnnotations(REQUEST_MAPPING_ANNOTATION), null).requestMappingAnnotation(), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REQUEST_MAPPING_ANNOTATION), null).requestMappingAnnotation().isPresent(), is(true));
+    assertThat(reader_.read(createAnnotations(REST_CONTROLLER_ANNOTATION), null).requestMappingAnnotation().isPresent(), is(false));
   }
 
   @Test
   public void readsRequestParam() {
-    assertThat(reader_.read(createAnnotations(REQUEST_PARAMS_ANNOTATION), null).requestParamAnnotation(), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REQUEST_PARAM_ANNOTATION), null).requestParamAnnotation(), is(true));
+    assertThat(reader_.read(createAnnotations(REQUEST_HEADER_ANNOTATION), null).requestParamAnnotation(), is(false));
+  }
+
+  @Test
+  public void readsRequestHeader() {
+    assertThat(reader_.read(createAnnotations(REQUEST_HEADER_ANNOTATION), null).requestHeaderAnnotation(), is(true));
+    assertThat(reader_.read(createAnnotations(REQUEST_PARAM_ANNOTATION), null).requestHeaderAnnotation(), is(false));
   }
 
   @Test
   public void readsRestController() {
     assertThat(reader_.read(createAnnotations(REST_CONTROLLER_ANNOTATION), null).getAnnotation(REST_CONTROLLER), not(nullValue()));
+    assertThat(reader_.read(createAnnotations(REQUEST_MAPPING_ANNOTATION), null).getAnnotation(REST_CONTROLLER), nullValue());
   }
 
   @Test

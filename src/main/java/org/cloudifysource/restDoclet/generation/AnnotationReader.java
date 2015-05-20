@@ -74,11 +74,13 @@ public class AnnotationReader {
       }
 
       @Override
-      public Optional<DocRequestParamAnnotation> requestParamAnnotation() {
-        AnnotationDesc annotationDesc = annotationMap.get(REQUEST_PARAM);
-        return annotationDesc != null
-                ? Optional.of(new DocRequestParamAnnotation(annotationDesc))
-                : Optional.<DocRequestParamAnnotation>absent();
+      public boolean requestParamAnnotation() {
+        return annotationMap.get(REQUEST_PARAM) != null;
+      }
+
+      @Override
+      public boolean requestHeaderAnnotation() {
+        return annotationMap.get(REQUEST_HEADER) != null;
       }
 
       @Override

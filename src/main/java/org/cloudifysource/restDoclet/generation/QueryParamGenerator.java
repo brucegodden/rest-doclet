@@ -42,18 +42,18 @@ public class QueryParamGenerator {
     List<DocParameter> parameters = new ArrayList<DocParameter>();
     Type type = parameter.type();
     if (type.isPrimitive() || wrapperClassNames.contains(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), type.qualifiedTypeName(), "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), type.qualifiedTypeName(), annotation));
     }
     else if (List.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), "List<?>", "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), "List<?>", annotation));
     }
     else if (Set.class.getName().equals(type.qualifiedTypeName())) {
-      parameters.add(new DocParameter(parameter.name(), "Set<?>", "RequestParam", annotation));
+      parameters.add(new DocParameter(parameter.name(), "Set<?>", annotation));
     }
     else {
       BeanInfo info = Introspector.getBeanInfo(Class.forName(type.qualifiedTypeName()), Object.class);
       for (PropertyDescriptor prop : info.getPropertyDescriptors()) {
-        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType().toString(), "RequestParam", annotation));
+        parameters.add(new DocParameter(prop.getName(), prop.getPropertyType().toString(), annotation));
       }
     }
     return parameters;
@@ -78,7 +78,7 @@ public class QueryParamGenerator {
           : type.qualifiedTypeName();
     }
 
-    final DocParameter docParameter = new DocParameter(parameter.name(), typeName, "RequestParam", annotation);
+    final DocParameter docParameter = new DocParameter(parameter.name(), typeName, annotation);
     if (paramsDocumentation.containsKey(parameter.name())) {
       docParameter.setDescription(paramsDocumentation.get(parameter.name()));
     }

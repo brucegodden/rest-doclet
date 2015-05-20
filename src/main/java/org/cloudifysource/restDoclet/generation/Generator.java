@@ -34,6 +34,7 @@ import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.*;
 import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.ObjectCreator;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Optional;
@@ -392,8 +393,7 @@ public class Generator {
     httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
     httpMethod.setHeaders(restAnnotations.requestMappingAnnotation().get().headers());
 
-    final Optional<DocRequestParamAnnotation> drpa = restAnnotations.requestParamAnnotation();
-    if (drpa.isPresent()) {
+    if (restAnnotations.requestParamAnnotation() || restAnnotations.requestHeaderAnnotation()) {
       httpMethod.setParams(generateRequestParams(methodDoc, restAnnotations));
     }
 
@@ -427,6 +427,11 @@ public class Generator {
     for (final Parameter param : methodDoc.parameters()) {
       for (final AnnotationDesc annotationDesc : param.annotations()) {
         if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestParam.class.getTypeName())) {
+          final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
+          final DocParameter docParameter = generator.createParam(param, paramAnnotation);
+          docParameters.add(docParameter);
+        }
+        else if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestHeader.class.getTypeName())) {
           final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
           final DocParameter docParameter = generator.createParam(param, paramAnnotation);
           docParameters.add(docParameter);
