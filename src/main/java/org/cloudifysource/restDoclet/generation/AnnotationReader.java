@@ -14,18 +14,19 @@ import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.sun.javadoc.AnnotationDesc;
+import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Tag;
 
 import static org.cloudifysource.restDoclet.constants.RestDocConstants.DocAnnotationTypes.*;
 
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.Maps.newHashMap;
 
 /**
  * @author edward
@@ -42,6 +43,13 @@ public class AnnotationReader {
     @Override
     public DocResponseStatus apply(final Tag input) {
       return new DocResponseStatus(input);
+    }
+  };
+
+  private Predicate<Tag> isParamTag = new Predicate<Tag>() {
+    @Override
+    public boolean apply(@Nullable final Tag input) {
+      return input != null && input.name().equals("@param");
     }
   };
 
@@ -65,11 +73,18 @@ public class AnnotationReader {
       }
 
       @Override
-      public Optional<DocRequestParamAnnotation> requestParamAnnotation() {
-        AnnotationDesc annotationDesc = annotationMap.get(REQUEST_PARAM);
-        return annotationDesc != null
-                ? Optional.of(new DocRequestParamAnnotation(annotationDesc))
-                : Optional.<DocRequestParamAnnotation>absent();
+      public boolean requestParamAnnotation() {
+        return annotationMap.get(REQUEST_PARAM) != null;
+      }
+
+      @Override
+      public boolean requestHeaderAnnotation() {
+        return annotationMap.get(REQUEST_HEADER) != null;
+      }
+
+      @Override
+      public boolean requestCommandAnnotation() {
+        return annotationMap.get(REQUEST_COMMAND) != null;
       }
 
       @Override
@@ -108,6 +123,16 @@ public class AnnotationReader {
       public Collection<DocResponseStatus> responseStatusCodes() {
         Collection<Tag> responseTags = filter(tags, isResponseTag);
         return transform(responseTags, intoResponseDoc);
+      }
+
+      @Override
+      public Map<String, String> paramsDocumentation() {
+        Map<String, String> params = newHashMap();
+        for (Tag tag : filter(tags, isParamTag)) {
+          ParamTag paramTag = (ParamTag) tag;
+          params.put(paramTag.parameterName(), paramTag.parameterComment());
+        }
+        return params;
       }
 
       @Override

@@ -19,12 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,16 +29,13 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
-import org.cloudifysource.restDoclet.docElements.DocController;
-import org.cloudifysource.restDoclet.docElements.DocHttpMethod;
-import org.cloudifysource.restDoclet.docElements.DocJsonRequestExample;
-import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
-import org.cloudifysource.restDoclet.docElements.DocMethod;
-import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocReturnDetails;
+import org.cloudifysource.restDoclet.docElements.*;
 import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
 import org.cloudifysource.restDoclet.exampleGenerators.ObjectCreator;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Optional;
 import com.sun.javadoc.AnnotationDesc;
@@ -184,6 +176,7 @@ public class Generator {
     // GENERATE DOCUMENTATIONS IN DOC CLASSES
     ClassDoc[] classes = documentation_.classes();
     List<DocController> controllers = generateControllers(classes);
+    controllers.sort((o1, o2) -> o1.getUri().compareTo(o2.getUri()));
     logger.log(Level.INFO, "Generated " + controllers.size()
         + " controllers, creating HTML documentation using velocity template.");
 
@@ -389,6 +382,11 @@ public class Generator {
                                                   final String httpMethodName,
                                                   final RestAnnotations restAnnotations)
           throws Exception {
+    if (StringUtils.isBlank(httpMethodName)) {
+      throw new IllegalArgumentException("method " + methodDoc.name()
+          +  " is missing the RequestMapping annotation's method parameter (eg GET).");
+    }
+
     DocHttpMethod httpMethod = new DocHttpMethod(methodDoc.name(), httpMethodName);
     httpMethod.setDescription(methodDoc.commentText());
     httpMethod.setReturnDetails(generateReturnDetails(methodDoc));
@@ -396,9 +394,8 @@ public class Generator {
     httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
     httpMethod.setHeaders(restAnnotations.requestMappingAnnotation().get().headers());
 
-    if (StringUtils.isBlank(httpMethod.getHttpMethodName())) {
-      throw new IllegalArgumentException("method " + methodDoc.name()
-          +  " is missing request mapping annotation's method (http method).");
+    if (restAnnotations.requestParamAnnotation() || restAnnotations.requestHeaderAnnotation() || restAnnotations.requestCommandAnnotation()) {
+      httpMethod.setParams(generateRequestParams(methodDoc, restAnnotations));
     }
 
     return httpMethod;
@@ -422,5 +419,30 @@ public class Generator {
       returnDetails.setDescription(returnTags[0].text());
     }
     return returnDetails;
+  }
+
+  private List<DocParameter> generateRequestParams(final MethodDoc methodDoc, final RestAnnotations restAnnotations)
+      throws Exception {
+    final List<DocParameter> docParameters = newArrayList();
+    final QueryParamGenerator generator = new QueryParamGenerator(restAnnotations);
+    for (final Parameter param : methodDoc.parameters()) {
+      for (final AnnotationDesc annotationDesc : param.annotations()) {
+        if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestParam.class.getTypeName())) {
+          final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
+          final DocParameter docParameter = generator.createParam(param, paramAnnotation, RestDocConstants.LOCATION_QUERY);
+          docParameters.add(docParameter);
+        }
+        else if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestHeader.class.getTypeName())) {
+          final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
+          final DocParameter docParameter = generator.createParam(param, paramAnnotation, RestDocConstants.LOCATION_HEADER);
+          docParameters.add(docParameter);
+        }
+        else if (annotationDesc.annotationType().qualifiedTypeName().equals(DocumentCommand.class.getTypeName())) {
+          final List<DocParameter> commandParams = generator.createCommandParams(param);
+          docParameters.addAll(commandParams);
+        }
+      }
+    }
+    return docParameters;
   }
 }
