@@ -50,19 +50,15 @@
 								<th>Name</th>
 								<th>Description</th>
 								<th>Mandatory</th>
-								<th>Parameter type</th>
+								<th>Location</th>
 								<th>Default value</th>
 							</tr>
 							#foreach($docParameter in $params)
 								<tr>
 									<td>$docParameter.getType()</td>
-									#if($docParameter.getRequestParamAnnotation() && $docParameter.getRequestParamAnnotation().getValue() && !$docParameter.getRequestParamAnnotation().getValue().isEmpty())
-										<td>$docParameter.getRequestParamAnnotation().getValue()</td>
-									#else
-										<td>$docParameter.getName()</td>
-									#end
+									<td>$docParameter.getLogicalName()</td>
 									#if($docParameter.getDescription())
-										<td>$docParameter.getDescription().replace(".", "")</td>
+										<td>$docParameter.getDescription()</td>
 									#else
 										<td></td>
 									#end

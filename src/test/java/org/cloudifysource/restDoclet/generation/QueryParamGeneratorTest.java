@@ -1,6 +1,5 @@
 package org.cloudifysource.restDoclet.generation;
 
-import java.beans.IntrospectionException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,78 +46,54 @@ public class QueryParamGeneratorTest {
 
   @Test
   public void primitiveParamGenerated() throws Exception {
-    DocParameter param = generator_.createParam(primitiveParam(), annotation_);
+    DocParameter param = generator_.createParam(primitiveParam(), annotation_, null);
     assertThat(param.getType(), is("long"));
   }
 
   @Test
   public void wrapperParamGenerated() throws Exception {
-    DocParameter param = generator_.createParam(wrapperParam(), annotation_);
+    DocParameter param = generator_.createParam(wrapperParam(), annotation_, null);
     assertThat(param.getType(), is("Long"));
   }
 
   @Test
   public void listParamGenerated() throws Exception {
-    DocParameter param = generator_.createParam(listParam(), annotation_);
+    DocParameter param = generator_.createParam(listParam(), annotation_, null);
     assertThat(param.getType(), is("List<?>"));
   }
 
   @Test
   public void setParamGenerated() throws Exception {
-    DocParameter param = generator_.createParam(setParam(), annotation_);
+    DocParameter param = generator_.createParam(setParam(), annotation_, null);
     assertThat(param.getType(), is("Set<?>"));
   }
 
   @Test
   public void generalParamGenerated() throws Exception {
-    DocParameter param = generator_.createParam(beanParam(), annotation_);
+    DocParameter param = generator_.createParam(beanParam(), annotation_, null);
     assertThat(param.getType(), is("org.cloudifysource.restDoclet.generation.QueryParamGeneratorTest$TestBean"));
   }
 
   @Test
   public void paramDescriptionGenerated() throws Exception {
-    DocParameter param = generator_.createParam(primitiveParam(), annotation_);
+    DocParameter param = generator_.createParam(primitiveParam(), annotation_, null);
     assertThat(param.getDescription(), is(PARAM_DESCRIPTION));
   }
 
   @Test
-  public void primitiveParamsGenerated() throws IntrospectionException, ClassNotFoundException {
-    Parameter primitive = primitiveParam();
+  public void commandParamsGenerated() throws Exception {
+    Parameter parameter = mock(Parameter.class);
+    Type type = mock(Type.class);
+    when(parameter.type()).thenReturn(type);
+    when(type.qualifiedTypeName()).thenReturn(TestBean.class.getTypeName());
 
-    List<DocParameter> params = generator_.createParamList(primitive, annotation_);
-    assertThat(params, hasSize(1));
-  }
+    List<DocParameter> params = generator_.createCommandParams(parameter);
 
-  @Test
-  public void wrapperParamsGenerated() throws IntrospectionException, ClassNotFoundException {
-    Parameter wrapper = wrapperParam();
-
-    List<DocParameter> params = generator_.createParamList(wrapper, annotation_);
-    assertThat(params, hasSize(1));
-  }
-
-  @Test
-  public void beanParamsGenerated() throws IntrospectionException, ClassNotFoundException {
-    Parameter bean = beanParam();
-
-    List<DocParameter> params = generator_.createParamList(bean, annotation_);
-    assertThat(params, hasSize(2));
-  }
-
-  @Test
-  public void listParamsGenerated() throws IntrospectionException, ClassNotFoundException {
-    Parameter list = listParam();
-
-    List<DocParameter> params = generator_.createParamList(list, annotation_);
-    assertThat(params, hasSize(1));
-  }
-
-  @Test
-  public void setParamsGenerated() throws IntrospectionException, ClassNotFoundException {
-    Parameter set = setParam();
-
-    List<DocParameter> params = generator_.createParamList(set, annotation_);
-    assertThat(params, hasSize(1));
+    assertThat(params.size(), is(2));
+    assertThat(params.get(0).getLogicalName(), is("number"));
+    assertThat(params.get(0).getType(), is("Long"));
+    assertThat(params.get(1).getLogicalName(), is("string"));
+    assertThat(params.get(1).getType(), is("String"));
   }
 
   private Parameter setParam() {

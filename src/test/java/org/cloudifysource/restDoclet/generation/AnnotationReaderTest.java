@@ -64,6 +64,12 @@ public class AnnotationReaderTest {
   }
 
   @Test
+  public void readsRequestCommand() {
+    assertThat(reader_.read(createAnnotations(REQUEST_COMMAND_ANNOTATION), null).requestCommandAnnotation(), is(true));
+    assertThat(reader_.read(createAnnotations(REQUEST_PARAM_ANNOTATION), null).requestCommandAnnotation(), is(false));
+  }
+
+  @Test
   public void readsRestController() {
     assertThat(reader_.read(createAnnotations(REST_CONTROLLER_ANNOTATION), null).getAnnotation(REST_CONTROLLER), not(nullValue()));
     assertThat(reader_.read(createAnnotations(REQUEST_MAPPING_ANNOTATION), null).getAnnotation(REST_CONTROLLER), nullValue());

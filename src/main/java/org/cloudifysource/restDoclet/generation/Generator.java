@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.generation;
 
-import java.beans.IntrospectionException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
@@ -30,6 +29,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.*;
 import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
@@ -393,7 +393,7 @@ public class Generator {
     httpMethod.setResponseStatuses(restAnnotations.responseStatusCodes());
     httpMethod.setHeaders(restAnnotations.requestMappingAnnotation().get().headers());
 
-    if (restAnnotations.requestParamAnnotation() || restAnnotations.requestHeaderAnnotation()) {
+    if (restAnnotations.requestParamAnnotation() || restAnnotations.requestHeaderAnnotation() || restAnnotations.requestCommandAnnotation()) {
       httpMethod.setParams(generateRequestParams(methodDoc, restAnnotations));
     }
 
@@ -428,13 +428,17 @@ public class Generator {
       for (final AnnotationDesc annotationDesc : param.annotations()) {
         if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestParam.class.getTypeName())) {
           final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
-          final DocParameter docParameter = generator.createParam(param, paramAnnotation);
+          final DocParameter docParameter = generator.createParam(param, paramAnnotation, RestDocConstants.LOCATION_QUERY);
           docParameters.add(docParameter);
         }
         else if (annotationDesc.annotationType().qualifiedTypeName().equals(RequestHeader.class.getTypeName())) {
           final DocRequestParamAnnotation paramAnnotation = new DocRequestParamAnnotation(annotationDesc);
-          final DocParameter docParameter = generator.createParam(param, paramAnnotation);
+          final DocParameter docParameter = generator.createParam(param, paramAnnotation, RestDocConstants.LOCATION_HEADER);
           docParameters.add(docParameter);
+        }
+        else if (annotationDesc.annotationType().qualifiedTypeName().equals(DocumentCommand.class.getTypeName())) {
+          final List<DocParameter> commandParams = generator.createCommandParams(param);
+          docParameters.addAll(commandParams);
         }
       }
     }

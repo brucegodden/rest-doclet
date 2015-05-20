@@ -14,7 +14,6 @@ import org.cloudifysource.restDoclet.docElements.DocJsonResponse;
 import org.cloudifysource.restDoclet.docElements.DocJsonResponseExample;
 import org.cloudifysource.restDoclet.docElements.DocResponseStatus;
 import org.cloudifysource.restDoclet.docElements.DocRequestMappingAnnotation;
-import org.cloudifysource.restDoclet.docElements.DocRequestParamAnnotation;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -81,6 +80,11 @@ public class AnnotationReader {
       @Override
       public boolean requestHeaderAnnotation() {
         return annotationMap.get(REQUEST_HEADER) != null;
+      }
+
+      @Override
+      public boolean requestCommandAnnotation() {
+        return annotationMap.get(REQUEST_COMMAND) != null;
       }
 
       @Override

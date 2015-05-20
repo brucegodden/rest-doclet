@@ -15,26 +15,42 @@
  *******************************************************************************/
 package org.cloudifysource.restDoclet.docElements;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  *
  * @author yael
  *
  */
 public class DocParameter {
-	private final String name_;
-  private final String type_;
-	private final DocRequestParamAnnotation requestParamAnnotation_;
 
-  private String description_;
+	private String actualName_;
+	private String logicalName_;
+	private String type_;
+	private String location_;
+	private String defaultValue_ = "";
+	private boolean isRequired_ = false;
+  private String description_ = "";
 
-  public DocParameter(final String name, final String type, final DocRequestParamAnnotation annotation) {
-		name_ = name;
-    type_ = type;
-    requestParamAnnotation_ = annotation;
-  }
+  public DocParameter(final String actualName, final String type, final String location, final DocRequestParamAnnotation annotation) {
+		this(actualName, annotation.getValue(), type, location);
+		defaultValue_ = String.valueOf(annotation.getDefaultValue());
+		isRequired_ = defaultValue_.isEmpty() && annotation.isRequired();
+	}
 
-	public String getName() {
-		return name_;
+	public DocParameter(final String actualName, final String logicalName, final String type, final String location) {
+		actualName_ = actualName;
+		logicalName_ = StringUtils.isBlank(logicalName) ? actualName : logicalName;
+		type_ = type.startsWith("java.lang.") ? type.substring(10) : type;
+		location_ = location;
+	}
+
+	public String getActualName() {
+		return actualName_;
+	}
+
+	public String getLogicalName() {
+		return logicalName_;
 	}
 
   public String getType() {
@@ -45,20 +61,19 @@ public class DocParameter {
 		return description_;
 	}
 
-  public String getRequestParamAnnotation() {
-    return requestParamAnnotation_.getValue();
-  }
-
 	/**
 	 *
 	 * @param description .
 	 */
 	public void setDescription(final String description) {
-		String trimedDescription = description.trim();
+		String trimmed = description.trim();
 		if (description.startsWith("-")) {
-			trimedDescription = description.substring(1).trim();
+			trimmed = description.substring(1);
 		}
-		description_ = trimedDescription;
+    if (trimmed.endsWith(".")) {
+      trimmed = trimmed.substring(0, trimmed.length() - 1);
+    }
+		description_ = trimmed.trim();
 	}
 
 	/**
@@ -66,11 +81,11 @@ public class DocParameter {
 	 * @return The value of the required attribute of the RequestParam annotation.
 	 */
 	public boolean isRequired() {
-    return requestParamAnnotation_.getDefaultValue() == null && requestParamAnnotation_.isRequired();
+    return isRequired_;
   }
 
 	public String getLocation() {
-		return requestParamAnnotation_.getName();
+		return location_;
 	}
 
 	/**
@@ -78,6 +93,6 @@ public class DocParameter {
 	 * @return The value of the defaultValue attribute of the RequestParam annotation.
 	 */
 	public String getDefaultValue() {
-		return requestParamAnnotation_.getDefaultValue();
+		return defaultValue_;
 	}
 }

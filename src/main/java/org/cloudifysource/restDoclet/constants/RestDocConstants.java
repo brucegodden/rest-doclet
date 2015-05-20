@@ -88,6 +88,8 @@ public final class RestDocConstants {
   public static final String REQUEST_HEADER_VALUE = "value";
   public static final String REQUEST_HEADER_DEFAULT_VALUE = "defaultValue";
 
+  public static final String REQUEST_COMMAND_ANNOTATION = "DocumentCommand";
+
   public static final String REQUEST_BODY_ANNOTATION = "RequestBody";
 
   public static final String RESPONSE_BODY_ANNOTATION = "ResponseBody";
@@ -116,6 +118,9 @@ public final class RestDocConstants {
   public static final String HTTP_METHOD_POST = "POST";
   public static final String HTTP_METHOD_DELETE = "DELETE";
 
+  public static final String LOCATION_QUERY = "Query";
+  public static final String LOCATION_HEADER = "Header";
+
 
   public enum DocAnnotationTypes {
     INTERNAL_METHOD,
@@ -124,6 +129,7 @@ public final class RestDocConstants {
     REQUEST_MAPPING,
     REQUEST_PARAM,
     REQUEST_HEADER,
+    REQUEST_COMMAND,
     REQUEST_BODY,
     RESPONSE_BODY,
     PATH_VARIABLE,
@@ -151,6 +157,8 @@ public final class RestDocConstants {
         return REQUEST_PARAM;
       } else if (REQUEST_HEADER_ANNOTATION.equals(annotationName)) {
         return REQUEST_HEADER;
+      } else if (REQUEST_COMMAND_ANNOTATION.equals(annotationName)) {
+        return REQUEST_COMMAND;
       } else if (REQUEST_BODY_ANNOTATION.equals(annotationName)) {
         return REQUEST_BODY;
       } else if (RESPONSE_BODY_ANNOTATION.equals(annotationName)) {

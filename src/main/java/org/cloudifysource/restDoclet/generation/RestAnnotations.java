@@ -20,6 +20,7 @@ public interface RestAnnotations {
   Optional<DocRequestMappingAnnotation> requestMappingAnnotation();
   boolean requestParamAnnotation();
   boolean requestHeaderAnnotation();
+  boolean requestCommandAnnotation();
   Optional<DocJsonResponseExample> jsonResponseExample();
   Optional<DocJsonRequestExample> jsonRequestExample();
   Optional<DocJsonResponse> responseBody();
