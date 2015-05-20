@@ -176,6 +176,7 @@ public class Generator {
     // GENERATE DOCUMENTATIONS IN DOC CLASSES
     ClassDoc[] classes = documentation_.classes();
     List<DocController> controllers = generateControllers(classes);
+    controllers.sort((o1, o2) -> o1.getUri().compareTo(o2.getUri()));
     logger.log(Level.INFO, "Generated " + controllers.size()
         + " controllers, creating HTML documentation using velocity template.");
 

@@ -41,7 +41,7 @@ public class DocParameter {
 	public DocParameter(final String actualName, final String logicalName, final String type, final String location) {
 		actualName_ = actualName;
 		logicalName_ = StringUtils.isBlank(logicalName) ? actualName : logicalName;
-		type_ = type.startsWith("java.lang.") ? type.substring(10) : type;
+		type_ = type.replace("java.lang.", "").replace("java.util.", "");
 		location_ = location;
 	}
 

@@ -48,10 +48,22 @@ public class QueryParamGenerator {
       typeName = type.simpleTypeName();
     }
     else if (List.class.getName().equals(type.qualifiedTypeName())) {
-      typeName = "List<?>";
+      if (type instanceof ParameterizedType) {
+        ParameterizedType pType = (ParameterizedType) type;
+        typeName = "List&lt;" + pType.typeArguments()[0].qualifiedTypeName() + "&gt;";
+      }
+      else {
+        typeName = "List&lt;?&gt;";
+      }
     }
     else if (Set.class.getName().equals(type.qualifiedTypeName())) {
-      typeName = "Set<?>";
+      if (type instanceof ParameterizedType) {
+        ParameterizedType pType = (ParameterizedType) type;
+        typeName = "Set&lt;" + pType.typeArguments()[0].qualifiedTypeName() + "&gt;";
+      }
+      else {
+        typeName = "Set&lt;?&gt;";
+      }
     }
     else {
       typeName = type.qualifiedTypeName();
@@ -69,7 +81,7 @@ public class QueryParamGenerator {
     final BeanInfo info = Introspector.getBeanInfo(Class.forName(parameter.type().qualifiedTypeName()), Object.class);
     for (PropertyDescriptor prop : info.getPropertyDescriptors()) {
       final DocParameter docParameter = new DocParameter(prop.getName(), prop.getName(), prop.getPropertyType().getName(), LOCATION_QUERY);
-      if (paramsDocumentation.containsKey(parameter.name())) {
+      if (paramsDocumentation.containsKey(prop.getName())) {
         docParameter.setDescription(paramsDocumentation.get(parameter.name()));
       }
       parameters.add(docParameter);

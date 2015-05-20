@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.Parameter;
+import com.sun.javadoc.ParameterizedType;
 import com.sun.javadoc.Type;
 
 import static com.google.common.collect.Maps.newHashMap;
@@ -59,13 +60,13 @@ public class QueryParamGeneratorTest {
   @Test
   public void listParamGenerated() throws Exception {
     DocParameter param = generator_.createParam(listParam(), annotation_, null);
-    assertThat(param.getType(), is("List<?>"));
+    assertThat(param.getType(), is("List&lt;String&gt;"));
   }
 
   @Test
   public void setParamGenerated() throws Exception {
     DocParameter param = generator_.createParam(setParam(), annotation_, null);
-    assertThat(param.getType(), is("Set<?>"));
+    assertThat(param.getType(), is("Set&lt;?&gt;"));
   }
 
   @Test
@@ -101,7 +102,11 @@ public class QueryParamGeneratorTest {
   }
 
   private Parameter listParam() {
-    return mockParam(false, List.class);
+    final ParameterizedType pType = mock(ParameterizedType.class);
+    final Type type = mock(Type.class);
+    when(pType.typeArguments()).thenReturn(new Type[] {type});
+    when(type.qualifiedTypeName()).thenReturn(String.class.getTypeName());
+    return mockParam(false, List.class, pType);
   }
 
   private Parameter beanParam() {
@@ -118,7 +123,10 @@ public class QueryParamGeneratorTest {
   }
 
   private Parameter mockParam(boolean primitive, Class clazz) {
-    Type type = mock(Type.class);
+    return mockParam(primitive, clazz, mock(Type.class));
+  }
+
+  private Parameter mockParam(boolean primitive, Class clazz, Type type) {
     when(type.isPrimitive()).thenReturn(primitive);
     when(type.simpleTypeName()).thenReturn(clazz.getSimpleName());
     when(type.qualifiedTypeName()).thenReturn(clazz.getName());

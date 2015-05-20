@@ -2,11 +2,11 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'maven'
 
-  sourceCompatibility = 1.6
-  targetCompatibility = 1.6
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
 
   group = 'org.cloudifysource'
-  version = '0.5.30'
+  version = '0.5.31'
 
   task sourceJar(type: Jar) {
     classifier = 'sources'
