@@ -1,7 +1,6 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -76,7 +75,7 @@ public class BeanCreator {
     logger_.warning("Unable to generate getter for '" + name + "' field deduced from constructor/setter");
   }
 
-  public Object create(final ObjectCreator creator) throws IllegalAccessException {
+  public Object create(final ObjectCreator creator) throws Exception {
     final Object bean = beanGenerator.create();
 
     for (Map.Entry<String, Class> entry : mapProperties.entrySet()) {

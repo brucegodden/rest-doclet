@@ -33,7 +33,8 @@ import org.cloudifysource.restDoclet.annotations.DocumentCommand;
 import org.cloudifysource.restDoclet.constants.RestDocConstants;
 import org.cloudifysource.restDoclet.docElements.*;
 import org.cloudifysource.restDoclet.exampleGenerators.ExampleGenerator;
-import org.cloudifysource.restDoclet.exampleGenerators.ObjectCreator;
+import org.cloudifysource.restDoclet.exampleGenerators.RequestObjectCreator;
+import org.cloudifysource.restDoclet.exampleGenerators.ResponseObjectCreator;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -77,7 +78,7 @@ public class Generator {
   private String version;
   private String docCssPath;
   private static AnnotationReader annotationReader = new AnnotationReader();
-  private static ExampleGenerator exampleGenerator = new ExampleGenerator(new ObjectCreator());
+  private static ExampleGenerator exampleGenerator = new ExampleGenerator(new RequestObjectCreator(), new ResponseObjectCreator());
 
   /**
    *

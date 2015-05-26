@@ -14,21 +14,33 @@ import com.sun.javadoc.*;
 public class ExampleGenerator {
   private static final Logger LOGGER = Logger.getLogger(ExampleGenerator.class.getName());
 
-  private final ObjectCreator objectCreator_;
+  private final RequestObjectCreator requestObjectCreator_;
+  private final ResponseObjectCreator responseObjectCreator_;
 
-  public ExampleGenerator(ObjectCreator objectCreator) {
-    objectCreator_ = objectCreator;
+  public ExampleGenerator(RequestObjectCreator requestObjectCreator, ResponseObjectCreator responseObjectCreator) {
+    requestObjectCreator_ = requestObjectCreator;
+    responseObjectCreator_ = responseObjectCreator;
   }
 
   public DocJsonResponseExample exampleResponse(final MethodDoc methodDoc) throws Exception {
     try {
-      Object newInstance = createObjectFromType(methodDoc.returnType());
+      Type type = methodDoc.returnType();
+      try {
+        Object object = isParameterized(type)
+            ? responseObjectCreator_.createParameterizedObject(Class.forName(classDescriptorFromType(type)),
+                                                               javadocTypesToClasses(type.asParameterizedType().typeArguments()))
+            : responseObjectCreator_.createObject(Class.forName(classDescriptorFromType(type)));
 
-      String generateExample = new ObjectMapper()
-              .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
-              .writeValueAsString(newInstance);
+        String generateExample = new ObjectMapper()
+                .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
+                .writeValueAsString(object);
 
-      return new DocJsonResponseExample(Utils.getIndentJson(generateExample), "");
+        return new DocJsonResponseExample(Utils.getIndentJson(generateExample), "");
+      }
+      catch (Exception e) {
+        LOGGER.severe("FAILED processing response from '" + methodDoc.name() + "' of type " + type.simpleTypeName());
+        throw e;
+      }
     } catch (Exception e) {
       throw new Exception("Failed to create response example for " + methodDoc.qualifiedName(), e);
     }
@@ -41,12 +53,23 @@ public class ExampleGenerator {
         return DocJsonRequestExample.EMPTY;
       }
 
-      final Object newInstance = createObjectFromType(requestBodyParameter.type());
-      final String generateExample = new ObjectMapper()
-              .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
-              .writeValueAsString(newInstance);
+      Type type = requestBodyParameter.type();
+      try {
+        final Object object = isParameterized(type)
+            ? requestObjectCreator_.createParameterizedObject(Class.forName(classDescriptorFromType(type)),
+                                                              javadocTypesToClasses(type.asParameterizedType().typeArguments()))
+            : requestObjectCreator_.createObject(Class.forName(classDescriptorFromType(type)));
 
-      return new DocJsonRequestExample(Utils.getIndentJson(generateExample), "");
+        final String generateExample = new ObjectMapper()
+            .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
+            .writeValueAsString(object);
+
+        return new DocJsonRequestExample(Utils.getIndentJson(generateExample), "");
+      }
+      catch (Exception e) {
+        LOGGER.severe("FAILED processing parameter '" + requestBodyParameter.name() + "' of type " + type.simpleTypeName());
+        throw e;
+      }
     }
     catch (Exception e) {
       throw new Exception("Failed to create request example for " + methodDoc.qualifiedName(), e);
@@ -64,15 +87,7 @@ public class ExampleGenerator {
     return null;
   }
 
-  public Object createObjectFromType(com.sun.javadoc.Type type) throws ClassNotFoundException, IllegalAccessException {
-    return isParameterized(type)
-            ? objectCreator_.createParameterizedObject(
-                      Class.forName(classDescriptorFromType(type)),
-                      javadocTypesToClasses(type.asParameterizedType().typeArguments()))
-            : objectCreator_.createObject(Class.forName(classDescriptorFromType(type)));
-  }
-
-  private boolean isParameterized(Type type) {
+  protected boolean isParameterized(Type type) {
     return type.asParameterizedType() != null;
   }
 
@@ -84,7 +99,7 @@ public class ExampleGenerator {
     return classes;
   }
 
-  private String classDescriptorFromType(Type type) {
+  protected String classDescriptorFromType(Type type) {
     if (type.asClassDoc() != null) {
       ClassDoc cd = type.asClassDoc();
       ClassDoc outer = cd.containingClass();
