@@ -7,7 +7,7 @@ allprojects {
   targetCompatibility = 1.8
 
   group = 'org.cloudifysource'
-  version = '0.5.31'
+  version = '0.5.32'
 
   task sourceJar(type: Jar) {
     classifier = 'sources'

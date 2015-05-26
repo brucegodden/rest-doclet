@@ -1,26 +1,8 @@
 package org.cloudifysource.restDoclet.exampleGenerators;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Logger;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.apache.commons.lang.StringUtils;
-import org.cloudifysource.restDoclet.annotations.DocumentCommand;
-import org.objenesis.Objenesis;
-import org.objenesis.ObjenesisStd;
-import org.springframework.cglib.proxy.Enhancer;
-import org.springframework.cglib.proxy.MethodInterceptor;
-import org.springframework.cglib.proxy.MethodProxy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,46 +10,76 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Primitives;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
+public abstract class ObjectCreator {
 
-public class ObjectCreator {
+  private static final Logger LOGGER = Logger.getLogger(ObjectCreator.class.getName());
 
-  private Objenesis objenesis_;
-  private static final Logger logger_ = Logger.getLogger(ObjectCreator.class.getName());
+  protected static final Set<String> OBJECT_METHODS = newHashSet();
+  static {
+    for (Method m : Object.class.getMethods()) {
+      OBJECT_METHODS.add(m.getName());
+    }
+  }
+
   private List<ExampleCreator> exampleCreators_;
   private List<ParametricExampleCreator> paramExampleCreators_;
 
+  public static String capitalize(final String name) {
+    return name.substring(0, 1).toUpperCase() + name.substring(1);
+  }
+
+  public static String uncapitalize(final String name) {
+    return name.substring(0, 1).toLowerCase() + name.substring(1);
+  }
 
   public ObjectCreator() {
-    objenesis_ = new ObjenesisStd();
-    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_, dateCreator_,
-        calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_, commandCreator_, failureCreator_);
+    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_,
+        dateCreator_, calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_);
+
     paramExampleCreators_ = newArrayList(listCreator_, setCreator_, mapCreator_);
   }
 
-  public Object createObject(final Class<?> cls) throws IllegalAccessException {
+  public Object createObject(final Class cls) throws Exception {
     for (ExampleCreator creator : exampleCreators_) {
       if (creator.match(cls)) {
         return creator.create(cls);
       }
     }
 
-    if (isAbstractOrInterface(cls)) {
-      return createProxy(cls);
+    final Map<String, Type> properties = getProperties(cls);
+
+    final BeanCreator beanCreator = new BeanCreator();
+    for (String name : properties.keySet()) {
+      beanCreator.addProperty(name, Object.class);
     }
 
-    try {
-      Object object = objenesis_.newInstance(cls);
-      instantiateFieldsOn(object);
-      return object;
+    final Object object = beanCreator.create(this);
+    for (String name : properties.keySet()) {
+      final Type type = properties.get(name);
+      try {
+        if (!type.equals(cls)) { // Avoid infinite recursion
+          final Method method = object.getClass().getMethod("set" + capitalize(name), Object.class);
+          method.invoke(object, createObjectFromType(type));
+        }
+      }
+      catch (Exception e) {
+        LOGGER.severe("FAILED processing field '" + name + "' of type " + type.getTypeName());
+        throw e;
+      }
+      catch (Error e) {
+        LOGGER.severe("FAILED processing field '" + name + "' of type " + type.getTypeName());
+        throw e;
+      }
     }
-    catch (IllegalAccessError illegal) {
-      logger_.warning("Could not instantiate an object of class: " + cls.getName());
-      return null;
-    }
+
+    return object;
   }
 
-  public Object createParameterizedObject(final Class base, final Class[] paramClasses) throws IllegalAccessException {
+  protected abstract Map<String, Type> getProperties(final Class cls);
+
+  public Object createParameterizedObject(final Class base, final Class[] paramClasses) throws Exception {
     for (ParametricExampleCreator creator : paramExampleCreators_) {
       if (creator.match(base)) {
         return creator.create(base, paramClasses);
@@ -76,60 +88,14 @@ public class ObjectCreator {
     return createObject(base);
   }
 
-  public void instantiateFieldsOn(final Object object) throws IllegalAccessException {
-    for (Class<?> cls = object.getClass(); cls != null; cls = cls.getSuperclass()) {
-      for (Field f : cls.getDeclaredFields()) {
-        f.setAccessible(true);
-        if (f.getType().equals(cls)) {
-          continue; //avoid infinite recursion!
-        } else if (f.getName().startsWith("this$")) {
-          continue; // Avoid recursion caused by owning class reference from inner classes.
-        } else if (!f.getType().isPrimitive() && f.get(object) != null) {
-          continue; // Ignore non-primitive fields that already have a value.
-        } else {
-          tryToSetField(f, object);
-        }
-      }
+  protected Object createObjectFromType(final Type type) throws Exception {
+    if (type instanceof ParameterizedType) {
+      final ParameterizedType pType = (ParameterizedType) type;
+      return createParameterizedObject((Class) pType.getRawType(), reflectTypesToClasses(pType.getActualTypeArguments()));
     }
-  }
-
-  private void tryToSetField(final Field field, final Object object) {
-    try {
-      final int modifiers = field.getModifiers();
-      if (!Modifier.isFinal(modifiers) || !Modifier.isStatic(modifiers)) {
-        field.setAccessible(true);
-        Class<?> fieldType = field.getType();
-        if (field.getGenericType() instanceof ParameterizedType) {
-          field.set(object, createParameterizedType(fieldType, (ParameterizedType) field.getGenericType()));
-        } else {
-          field.set(object, createObject(fieldType));
-        }
-      }
+    else {
+      return createObject((Class) type);
     }
-    catch (IllegalAccessException illegal) {
-      logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
-    }
-    catch (ClassNotFoundException e) {
-      logger_.warning("Could not set field " + field.getName() + " on a " + object.getClass());
-    }
-  }
-
-  public Object createProxy(final Class cls) {
-    return Enhancer.create(cls, new MethodInterceptor() {
-      @Override
-      public Object intercept(final Object proxy, final Method method,
-                              final Object[] args, final MethodProxy methodProxy)
-              throws Throwable
-      {
-        return createObject(method.getReturnType());
-      }
-    });
-  }
-
-  private Object createParameterizedType(final Class base, final ParameterizedType genericType)
-          throws IllegalAccessException, ClassNotFoundException
-  {
-    return createParameterizedObject(base, reflectTypesToClasses(genericType.getActualTypeArguments()));
   }
 
   private Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
@@ -154,24 +120,18 @@ public class ObjectCreator {
         }
       }
 
-      logger_.warning("nonclass: " + type);
-      classes[i] = Failure.class;
+      throw new ClassNotFoundException("Unable to find class for type " + type.getTypeName());
     }
     return classes;
   }
 
-  private boolean isAbstractOrInterface(final Class<?> cls) {
-    int modifiers = cls.getModifiers();
-    return Modifier.isInterface(modifiers) || Modifier.isAbstract(modifiers);
-  }
-
   interface ExampleCreator {
     boolean match(Class cls);
-    Object create(Class cls) throws IllegalAccessException;
+    Object create(Class cls) throws Exception;
   }
 
   interface ParametricExampleCreator extends ExampleCreator {
-    Object create(Class cls, Class[] paramClasses) throws IllegalAccessException;
+    Object create(Class cls, Class[] paramClasses) throws Exception;
   }
 
   private static ExampleCreator stringCreator_ = new ExampleCreator() {
@@ -208,7 +168,7 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       return PrimitiveExampleValues.getValue(Primitives.unwrap(cls));
     }
   };
@@ -233,7 +193,7 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       return new Date();
     }
   };
@@ -245,7 +205,7 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       return Calendar.getInstance();
     }
   };
@@ -257,9 +217,9 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       final Class componentClass = cls.getComponentType();
-      Object array = Array.newInstance(componentClass, 1);
+      Object array = Array.newInstance(Object.class, 1);
       Array.set(array, 0, createObject(componentClass));
       return array;
     }
@@ -272,15 +232,15 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       return this.create(cls, new Class[]{Object.class});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
-        List list = ImmutableList.of(createObject(paramClasses[0]));
-        return list;
+    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
+      List list = ImmutableList.of(createObject(paramClasses[0]));
+      return list;
     }
   };
 
@@ -291,13 +251,13 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
+    public Object create(final Class cls) throws Exception {
       return this.create(cls, new Class[]{Object.class});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
+    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
       Set set = ImmutableSet.of(createObject(paramClasses[0]));
       return set;
     }
@@ -310,88 +270,15 @@ public class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws IllegalAccessException {
-      return this.create(cls, new Class[] {String.class, String.class});
+    public Object create(final Class cls) throws Exception {
+      return this.create(cls, new Class[]{String.class, String.class});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws IllegalAccessException {
+    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
       Map map = ImmutableMap.of(createObject(paramClasses[0]), createObject(paramClasses[1]));
       return map;
-    }
-  };
-
-  private ExampleCreator commandCreator_ = new ExampleCreator() {
-    @Override
-    public boolean match(final Class cls) {
-      return findAnnotation(DocumentCommand.class, cls.getDeclaredAnnotations()) != null;
-    }
-
-    @Override
-    public Object create(final Class cls) throws IllegalAccessException {
-      BeanCreator beanCreator = new BeanCreator();
-      boolean documented = false;
-
-      // Look for a constructor with the JsonProperty annotation. (There can only be one.)
-      for (Constructor c : cls.getConstructors()) {
-        Type[] types = c.getGenericParameterTypes();
-        Annotation[][] annotations = c.getParameterAnnotations();
-        for (int i = 0; i < types.length; i++) {
-          JsonProperty annotation = (JsonProperty) findAnnotation(JsonProperty.class, annotations[i]);
-          if (annotation != null && StringUtils.isNotEmpty(annotation.value())) {
-            beanCreator.addProperty(annotation.value(), types[i]);
-            documented = true;
-          }
-        }
-        if (documented) {
-          break;
-        }
-      }
-
-      // If we didn't find an annotated constructor then look for setters and create
-      // equivalent getters.
-      if (!documented) {
-        // Although we would like to do this for the annotated constructor case as well it
-        // causes construction of the object to fail because the constructor doesn't get
-        // called. So we only do it for the setters case.
-        beanCreator.setSuperclass(cls);
-
-        for (Method m : cls.getMethods()) {
-          if (m.getName().startsWith("set") && m.getName().length() > 3 && m.getParameterTypes().length == 1) {
-            String name = m.getName().substring(3, 4).toLowerCase() + m.getName().substring(4);
-            beanCreator.addProperty(name, m.getGenericParameterTypes()[0]);
-          }
-        }
-      }
-
-      Object bean = beanCreator.create(ObjectCreator.this);
-      instantiateFieldsOn(bean);
-      return bean;
-    }
-
-    private Annotation findAnnotation(final Class annotationClass, final Annotation[] annotations) {
-      for (Annotation annotation : annotations) {
-        if (annotationClass.isAssignableFrom(annotation.getClass())) {
-          return annotation;
-        }
-      }
-      return null;
-    }
-  };
-
-  private class Failure {
-  }
-
-  private ExampleCreator failureCreator_ = new ExampleCreator() {
-    @Override
-    public boolean match(final Class cls) {
-      return Failure.class.isAssignableFrom(cls);
-    }
-
-    @Override
-    public Object create(final Class cls) throws IllegalAccessException {
-      return null;
     }
   };
 }

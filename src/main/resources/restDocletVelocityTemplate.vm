@@ -57,18 +57,10 @@
 								<tr>
 									<td>$docParameter.getType()</td>
 									<td>$docParameter.getLogicalName()</td>
-									#if($docParameter.getDescription())
-										<td>$docParameter.getDescription()</td>
-									#else
-										<td></td>
-									#end
+									<td>$docParameter.getDescription()</td>
 									<td>$docParameter.isRequired()</td>
 									<td>$docParameter.getLocation()</td>
-									#if($docParameter.getDefaultValue())
-										<td>$docParameter.getDefaultValue()</td>
-									#else
-										<td></td>
-									#end
+									<td>$docParameter.getDefaultValue()</td>
 								</tr>
 							#end
 						</table>

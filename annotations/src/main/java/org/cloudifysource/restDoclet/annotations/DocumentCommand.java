@@ -6,16 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark a parameter as being a command object whose setters need documenting.
- *
- * Annotation to mark a command class that requires special processing to find the properties it sets:
- *
- * 1/ We look for constructor parameters annotated with @JsonProperty.
- * 2/ We look for public setter methods in the class and its superclasses.
+ * Annotation to mark a controller parameter as being a command object whose @JsonProperty
+ * annotated constructor or whose setters need documenting.
  *
  * @author bruce
  */
-@Target({ElementType.TYPE, ElementType.PARAMETER})
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DocumentCommand {
 }

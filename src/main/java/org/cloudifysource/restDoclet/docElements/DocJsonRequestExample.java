@@ -22,7 +22,7 @@ public class DocJsonRequestExample  {
   private String jsonString_;
   private String comments_;
 
-  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("request has no body", "");
+  public static final DocJsonRequestExample EMPTY = new DocJsonRequestExample("Request has no body", "");
 
   public DocJsonRequestExample(String example, String comments) {
     jsonString_ = example;
