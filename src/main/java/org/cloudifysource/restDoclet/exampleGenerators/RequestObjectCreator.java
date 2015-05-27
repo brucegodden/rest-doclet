@@ -13,8 +13,8 @@ import static com.google.common.collect.Maps.newHashMap;
 public class RequestObjectCreator extends ObjectCreator {
 
   @Override
-  protected Map<String, Type> getProperties(final Class cls) {
-    final Map<String, Type> properties = newHashMap();
+  protected Map<String, ObjectType> getProperties(final Class cls) {
+    final Map<String, ObjectType> properties = newHashMap();
 
     // Look for a constructor with JsonProperty annotations. (There can only be one.)
     for (Constructor c : cls.getConstructors()) {
@@ -24,7 +24,7 @@ public class RequestObjectCreator extends ObjectCreator {
       for (int i = 0; i < types.length; i++) {
         JsonProperty annotation = (JsonProperty) findAnnotation(JsonProperty.class, annotations[i]);
         if (annotation != null && StringUtils.isNotEmpty(annotation.value())) {
-          properties.put(uncapitalize(annotation.value()), types[i]);
+          properties.put(uncapitalize(annotation.value()), new ObjectType(types[i]));
         }
       }
 
@@ -41,7 +41,7 @@ public class RequestObjectCreator extends ObjectCreator {
             && m.getName().length() > 3
             && m.getParameterTypes().length == 1
             && !OBJECT_METHODS.contains(m.getName())) {
-          properties.put(uncapitalize(m.getName().substring(3)), m.getGenericParameterTypes()[0]);
+          properties.put(uncapitalize(m.getName().substring(3)), new ObjectType(m.getGenericParameterTypes()[0]));
         }
       }
     }

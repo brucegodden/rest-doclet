@@ -12,6 +12,8 @@ import com.google.common.primitives.Primitives;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import net.sf.cglib.beans.BeanGenerator;
+
 public abstract class ObjectCreator {
 
   private static final Logger LOGGER = Logger.getLogger(ObjectCreator.class.getName());
@@ -41,35 +43,45 @@ public abstract class ObjectCreator {
     paramExampleCreators_ = newArrayList(listCreator_, setCreator_, mapCreator_);
   }
 
-  public Object createObject(final Class cls) throws Exception {
-    for (ExampleCreator creator : exampleCreators_) {
-      if (creator.match(cls)) {
-        return creator.create(cls);
+  public Object createObject(final ObjectType objectType) throws Exception {
+    final Class clazz = Class.forName(objectType.getQualifiedName());
+
+    if (objectType.isParameterized()) {
+      for (ParametricExampleCreator creator : paramExampleCreators_) {
+        if (creator.match(clazz)) {
+          return creator.create(clazz, objectType.getParameterTypes());
+        }
       }
     }
 
-    final Map<String, Type> properties = getProperties(cls);
-
-    final BeanCreator beanCreator = new BeanCreator();
-    for (String name : properties.keySet()) {
-      beanCreator.addProperty(name, Object.class);
+    for (ExampleCreator creator : exampleCreators_) {
+      if (creator.match(clazz)) {
+        return creator.create(clazz);
+      }
     }
 
-    final Object object = beanCreator.create(this);
+    final Map<String, ObjectType> properties = getProperties(clazz);
+
+    final BeanGenerator beanGenerator = new BeanGenerator();
     for (String name : properties.keySet()) {
-      final Type type = properties.get(name);
+      beanGenerator.addProperty(name, Object.class);
+    }
+
+    final Object object = beanGenerator.create();
+    for (String name : properties.keySet()) {
+      final ObjectType propertyType = properties.get(name);
       try {
-        if (!type.equals(cls)) { // Avoid infinite recursion
+        if (!propertyType.getQualifiedName().equals(objectType.getQualifiedName())) { // Avoid infinite recursion
           final Method method = object.getClass().getMethod("set" + capitalize(name), Object.class);
-          method.invoke(object, createObjectFromType(type));
+          method.invoke(object, createObject(propertyType));
         }
       }
       catch (Exception e) {
-        LOGGER.severe("FAILED processing field '" + name + "' of type " + type.getTypeName());
+        LOGGER.severe("FAILED processing field '" + name + "' of type " + propertyType.toString());
         throw e;
       }
       catch (Error e) {
-        LOGGER.severe("FAILED processing field '" + name + "' of type " + type.getTypeName());
+        LOGGER.severe("FAILED processing field '" + name + "' of type " + propertyType.toString());
         throw e;
       }
     }
@@ -77,53 +89,7 @@ public abstract class ObjectCreator {
     return object;
   }
 
-  protected abstract Map<String, Type> getProperties(final Class cls);
-
-  public Object createParameterizedObject(final Class base, final Class[] paramClasses) throws Exception {
-    for (ParametricExampleCreator creator : paramExampleCreators_) {
-      if (creator.match(base)) {
-        return creator.create(base, paramClasses);
-      }
-    }
-    return createObject(base);
-  }
-
-  protected Object createObjectFromType(final Type type) throws Exception {
-    if (type instanceof ParameterizedType) {
-      final ParameterizedType pType = (ParameterizedType) type;
-      return createParameterizedObject((Class) pType.getRawType(), reflectTypesToClasses(pType.getActualTypeArguments()));
-    }
-    else {
-      return createObject((Class) type);
-    }
-  }
-
-  private Class[] reflectTypesToClasses(Type[] types) throws ClassNotFoundException {
-    Class[] classes = new Class[types.length];
-    for (int i = 0; i < types.length; i++) {
-      final Type type = types[i];
-
-      if (type instanceof Class) {
-        classes[i] = (Class) type;
-        continue;
-      }
-
-      if (type instanceof WildcardType) {
-        WildcardType wType = (WildcardType) type;
-        final Type upperType = wType.getUpperBounds()[0];
-        if (upperType instanceof Class) {
-          final Class upperClass = (Class) upperType;
-          if (!upperClass.equals(Object.class)) {
-            classes[i] = upperClass;
-            continue;
-          }
-        }
-      }
-
-      throw new ClassNotFoundException("Unable to find class for type " + type.getTypeName());
-    }
-    return classes;
-  }
+  protected abstract Map<String, ObjectType> getProperties(final Class cls);
 
   interface ExampleCreator {
     boolean match(Class cls);
@@ -131,7 +97,7 @@ public abstract class ObjectCreator {
   }
 
   interface ParametricExampleCreator extends ExampleCreator {
-    Object create(Class cls, Class[] paramClasses) throws Exception;
+    Object create(Class cls, ObjectType[] parameters) throws Exception;
   }
 
   private static ExampleCreator stringCreator_ = new ExampleCreator() {
@@ -220,7 +186,7 @@ public abstract class ObjectCreator {
     public Object create(final Class cls) throws Exception {
       final Class componentClass = cls.getComponentType();
       Object array = Array.newInstance(Object.class, 1);
-      Array.set(array, 0, createObject(componentClass));
+      Array.set(array, 0, createObject(new ObjectType(componentClass)));
       return array;
     }
   };
@@ -233,13 +199,13 @@ public abstract class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws Exception {
-      return this.create(cls, new Class[]{Object.class});
+      return this.create(cls, new ObjectType[] {new ObjectType(Object.class)});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
-      List list = ImmutableList.of(createObject(paramClasses[0]));
+    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
+      List list = ImmutableList.of(createObject(parameters[0]));
       return list;
     }
   };
@@ -252,13 +218,13 @@ public abstract class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws Exception {
-      return this.create(cls, new Class[]{Object.class});
+      return this.create(cls, new ObjectType[] {new ObjectType(Object.class)});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
-      Set set = ImmutableSet.of(createObject(paramClasses[0]));
+    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
+      Set set = ImmutableSet.of(createObject(parameters[0]));
       return set;
     }
   };
@@ -271,13 +237,13 @@ public abstract class ObjectCreator {
 
     @Override
     public Object create(final Class cls) throws Exception {
-      return this.create(cls, new Class[]{String.class, String.class});
+      return this.create(cls, new ObjectType[]{new ObjectType(String.class), new ObjectType(String.class)});
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls, final Class[] paramClasses) throws Exception {
-      Map map = ImmutableMap.of(createObject(paramClasses[0]), createObject(paramClasses[1]));
+    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
+      Map map = ImmutableMap.of(createObject(parameters[0]), createObject(parameters[1]));
       return map;
     }
   };

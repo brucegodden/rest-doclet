@@ -7,7 +7,7 @@ allprojects {
   targetCompatibility = 1.8
 
   group = 'org.cloudifysource'
-  version = '0.5.32'
+  version = '0.5.33'
 
   task sourceJar(type: Jar) {
     classifier = 'sources'
@@ -79,7 +79,6 @@ dependencies {
   compile 'com.google.guava:guava:15.0'
   compile 'commons-lang:commons-lang:2.6'
   compile 'org.apache.velocity:velocity:1.7'
-  compile 'org.objenesis:objenesis:1.3'
   compile "org.codehaus.jackson:jackson-core-asl:$jackson_version"
   compile "org.codehaus.jackson:jackson-mapper-asl:$jackson_version"
   compile "org.springframework:spring-context:$spring_version"

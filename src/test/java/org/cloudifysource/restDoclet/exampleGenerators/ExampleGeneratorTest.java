@@ -36,7 +36,7 @@ public class ExampleGeneratorTest {
   public void exampleResponseCanHandleString() throws Exception {
     Type stringType = stringType();
     when(methodDoc_.returnType()).thenReturn(stringType);
-    when(responseCreator_.createObject(String.class)).thenReturn("Obiwan");
+    when(responseCreator_.createObject(any(ObjectType.class))).thenReturn("Obiwan");
 
     final DocJsonResponseExample example = exampleGenerator_.exampleResponse(methodDoc_);
 
@@ -48,7 +48,7 @@ public class ExampleGeneratorTest {
   public void exampleResponseCanHandleListOfStrings() throws Exception {
     Type listType = listOfStringsType();
     when(methodDoc_.returnType()).thenReturn(listType);
-    when(responseCreator_.createParameterizedObject(List.class, new Class[]{String.class})).thenReturn(new String[]{"Jarjar", "Binks"});
+    when(responseCreator_.createObject(any(ObjectType.class))).thenReturn(new String[]{"Jarjar", "Binks"});
 
     final DocJsonResponseExample example = exampleGenerator_.exampleResponse(methodDoc_);
 
@@ -64,7 +64,7 @@ public class ExampleGeneratorTest {
 
     final DocJsonRequestExample example = exampleGenerator_.exampleRequest(methodDoc_);
 
-    verify(requestCreator_, never()).createObject(any(Class.class));
+    verify(requestCreator_, never()).createObject(any(ObjectType.class));
     assertThat(example, is(DocJsonRequestExample.EMPTY));
 
   }
@@ -74,7 +74,7 @@ public class ExampleGeneratorTest {
     final Parameter bodyParam = createParam("body0", ExampleBody.type(), RequestBody.class);
     when(methodDoc_.parameters()).thenReturn(new Parameter[] {bodyParam});
     when(methodDoc_.paramTags()).thenReturn(new ParamTag[0]);
-    when(requestCreator_.createObject(ExampleBody.class)).thenReturn(new ExampleBody());
+    when(requestCreator_.createObject(any(ObjectType.class))).thenReturn(new ExampleBody());
 
     final DocJsonRequestExample example = exampleGenerator_.exampleRequest(methodDoc_);
 
@@ -89,8 +89,7 @@ public class ExampleGeneratorTest {
   public void exampleRequestHandlesRequestBodyParamsList() throws Exception {
     final Parameter bodyParam = createParam("body0", ExampleBodyList.type(), RequestBody.class);
     when(methodDoc_.parameters()).thenReturn(new Parameter[] {bodyParam});
-    when(requestCreator_.createParameterizedObject(ArrayList.class, new Class[] { ExampleBody.class } ))
-        .thenReturn(ImmutableList.of(new ExampleBody()));
+    when(requestCreator_.createObject(any(ObjectType.class))).thenReturn(ImmutableList.of(new ExampleBody()));
 
     final DocJsonRequestExample example = exampleGenerator_.exampleRequest(methodDoc_);
 

@@ -300,15 +300,13 @@ public class Generator {
       DocController controller = new DocController(controllerClassName);
 
       SortedMap<String, DocMethod> generatedMethods = generateMethods(classDoc.methods());
-      if (generatedMethods.isEmpty()) {
-        throw new IllegalArgumentException("controller class "
-            + controller.getName() + " doesn't have methods.");
-      }
-      controller.setMethods(generatedMethods);
-      controller.setUri(uri);
-      controller.setDescription(classDoc.commentText());
+      if (!generatedMethods.isEmpty()) {
+        controller.setMethods(generatedMethods);
+        controller.setUri(uri);
+        controller.setDescription(classDoc.commentText());
 
-      controllers.add(controller);
+        controllers.add(controller);
+      }
     }
     return controllers;
   }

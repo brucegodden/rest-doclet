@@ -26,10 +26,7 @@ public class ExampleGenerator {
     try {
       Type type = methodDoc.returnType();
       try {
-        Object object = isParameterized(type)
-            ? responseObjectCreator_.createParameterizedObject(Class.forName(classDescriptorFromType(type)),
-                                                               javadocTypesToClasses(type.asParameterizedType().typeArguments()))
-            : responseObjectCreator_.createObject(Class.forName(classDescriptorFromType(type)));
+        Object object = responseObjectCreator_.createObject(new ObjectType(type));
 
         String generateExample = new ObjectMapper()
                 .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
@@ -55,10 +52,7 @@ public class ExampleGenerator {
 
       Type type = requestBodyParameter.type();
       try {
-        final Object object = isParameterized(type)
-            ? requestObjectCreator_.createParameterizedObject(Class.forName(classDescriptorFromType(type)),
-                                                              javadocTypesToClasses(type.asParameterizedType().typeArguments()))
-            : requestObjectCreator_.createObject(Class.forName(classDescriptorFromType(type)));
+        final Object object = requestObjectCreator_.createObject(new ObjectType(type));
 
         final String generateExample = new ObjectMapper()
             .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
@@ -85,37 +79,5 @@ public class ExampleGenerator {
       }
     }
     return null;
-  }
-
-  protected boolean isParameterized(Type type) {
-    return type.asParameterizedType() != null;
-  }
-
-  Class[] javadocTypesToClasses(Type[] types) throws ClassNotFoundException {
-    Class[] classes = new Class[types.length];
-    for (int i = 0; i < types.length; i++) {
-      classes[i] = Class.forName(types[i].qualifiedTypeName());
-    }
-    return classes;
-  }
-
-  protected String classDescriptorFromType(Type type) {
-    if (type.asClassDoc() != null) {
-      ClassDoc cd = type.asClassDoc();
-      ClassDoc outer = cd.containingClass();
-      String qualifiedName;
-      if (outer == null) {
-        qualifiedName = cd.qualifiedName();
-      }
-      else {
-        String simpleName = cd.name();
-        simpleName = simpleName.substring(simpleName.lastIndexOf('.') + 1);
-        qualifiedName = outer.qualifiedName() + '$' + simpleName;
-      }
-      return qualifiedName;
-    }
-    else {
-      return type.qualifiedTypeName();
-    }
   }
 }
