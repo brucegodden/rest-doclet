@@ -24,13 +24,13 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void createsAnObject() throws Exception {
-    Object empty = creator_.createObject(EmptyClass.class);
+    Object empty = creator_.createObject(new ObjectType(EmptyClass.class));
     assertThat(empty, notNullValue());
   }
 
   @Test
   public void setsAStringFieldOnAnObject() throws Exception {
-    final Object fish = creator_.createObject(Fish.class);
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
     final String name = (String) callMethod(fish, "getName", String.class);
     assertThat(name, notNullValue());
     assertThat(name.length(), greaterThan(0));
@@ -38,28 +38,28 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void setsAGetPrimitiveFieldOnAnObject() throws Exception {
-    final Object fish = creator_.createObject(Fish.class);
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
     final Long count = (Long) callMethod(fish, "getCount", Long.class);
     assertThat(count, notNullValue());
   }
 
   @Test
   public void setsAnIsPrimitiveFieldOnAnObject() throws Exception {
-    final Object fish = creator_.createObject(Fish.class);
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
     final Boolean saltwater = (Boolean) callMethod(fish, "getSaltwater", Boolean.class);
     assertThat(saltwater, notNullValue());
   }
 
   @Test
   public void setsAGetWrapperFieldOnAnObject() throws Exception {
-    final Object fish = creator_.createObject(Fish.class);
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
     final Integer temp = (Integer) callMethod(fish, "getTemp", Integer.class);
     assertThat(temp, notNullValue());
   }
 
   @Test
   public void createsNestedClasses() throws Exception {
-    final Object fishBowl = creator_.createObject(FishBowl.class);
+    final Object fishBowl = creator_.createObject(new ObjectType(FishBowl.class));
     final Object fish = callMethod(fishBowl, "getFish", Object.class);
     assertThat(fish, notNullValue());
     final String name = (String) callMethod(fish, "getName", String.class);
@@ -68,7 +68,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void createsLists() throws Exception {
-    final Object aquarium = creator_.createObject(Aquarium.class);
+    final Object aquarium = creator_.createObject(new ObjectType(Aquarium.class));
     final List<Object> fishes = (List<Object>) callMethod(aquarium, "getFishes", List.class);
     assertThat(fishes, instanceOf(List.class));
     assertThat(fishes, hasSize(greaterThan(0)));
@@ -78,7 +78,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void createsListsOfLists() throws Exception {
-    final Object seaWorld = creator_.createObject(SeaWorld.class);
+    final Object seaWorld = creator_.createObject(new ObjectType(SeaWorld.class));
     final List<Object> aquariums = (List<Object>) callMethod(seaWorld, "getAquariums", List.class);
     assertThat(aquariums, instanceOf(List.class));
     assertThat(aquariums, hasSize(greaterThan(0)));
@@ -88,15 +88,15 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void createClassWithEnumField() throws Exception {
-    final Object response = creator_.createObject(ClassWithEnumField.class);
+    final Object response = creator_.createObject(new ObjectType(ClassWithEnumField.class));
     final ClassWithEnumField.Status status = (ClassWithEnumField.Status) callMethod(response, "getStatus", ClassWithEnumField.Status.class);
     assertThat(status, notNullValue());
-    assertThat(status, is(ClassWithEnumField.Status.ACTIVATED));
+    assertThat(status, is(ClassWithEnumField.Status.PENDING));
   }
 
   @Test
   public void canCreateAnInterfaceClass() throws Exception {
-    final Object object = creator_.createObject(InterfaceClass.class);
+    final Object object = creator_.createObject(new ObjectType(InterfaceClass.class));
     assertThat(object, notNullValue());
     final String bar = (String) callMethod(object, "getBar", String.class);
     assertThat(bar, notNullValue());
@@ -104,7 +104,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateAnAbstractClass() throws Exception {
-    final Object object = creator_.createObject(AbstractClass.class);
+    final Object object = creator_.createObject(new ObjectType(AbstractClass.class));
     assertThat(object, notNullValue());
     final String foo = (String) callMethod(object, "getFoo", String.class);
     assertThat(foo, notNullValue());
@@ -112,7 +112,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateClassContainingAnAbstractClass() throws Exception {
-    final Object outer = creator_.createObject(ClassWithAnAbstractClassInside.class);
+    final Object outer = creator_.createObject(new ObjectType(ClassWithAnAbstractClassInside.class));
     final Object inner = callMethod(outer, "getTheAbstractClass", Object.class);
     assertThat(inner, notNullValue());
     assertHasMethod(inner, "getFoo");
@@ -120,21 +120,21 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateDateField() throws Exception {
-    final Object dateClass = creator_.createObject(ClassWithDate.class);
+    final Object dateClass = creator_.createObject(new ObjectType(ClassWithDate.class));
     final Date date = (Date) callMethod(dateClass, "getDate", Date.class);
     assertThat(date, notNullValue());
   }
 
   @Test
   public void canCreateCalendarField() throws Exception {
-    final Object calendarClass = creator_.createObject(ClassWithCalendar.class);
+    final Object calendarClass = creator_.createObject(new ObjectType(ClassWithCalendar.class));
     final Calendar calendar = (Calendar) callMethod(calendarClass, "getCalendar", Calendar.class);
     assertThat(calendar, notNullValue());
   }
 
   @Test
   public void canCreateAMap() throws Exception {
-    final Object mapClass = creator_.createObject(ClassWithMap.class);
+    final Object mapClass = creator_.createObject(new ObjectType(ClassWithMap.class));
     final Map<Long, String> map = (Map<Long, String>) callMethod(mapClass, "getMap", Map.class);
     assertThat(map, notNullValue());
     Iterator<Map.Entry<Long, String>> it = map.entrySet().iterator();
@@ -149,7 +149,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateASet() throws Exception {
-    final Object setClass = creator_.createObject(ClassWithSet.class);
+    final Object setClass = creator_.createObject(new ObjectType(ClassWithSet.class));
     final Set<String> set = (Set<String>) callMethod(setClass, "getSet", Set.class);
     assertThat(set, notNullValue());
     Iterator<String> it = set.iterator();
@@ -162,7 +162,7 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateANestedInnerClass() throws Exception {
-    final Object outer = creator_.createObject(ClassWithNestedInnerClass.class);
+    final Object outer = creator_.createObject(new ObjectType(ClassWithNestedInnerClass.class));
     final Object inner = callMethod(outer, "getInner", Object.class);
     assertThat(inner, notNullValue());
     assertHasMethod(inner, "getCount");
@@ -170,14 +170,14 @@ public class ResponseObjectCreatorTest {
 
   @Test
   public void canCreateATopLevelList() throws Exception {
-    List<String> stringList = newArrayList("a");
-    Object listObject = creator_.createObject(stringList.getClass());
+    final List<String> stringList = newArrayList();
+    final Object listObject = creator_.createObject(new ObjectType(stringList.getClass()));
     assertThat(listObject, instanceOf(List.class));
   }
 
   @Test(expected = NoSuchMethodException.class)
   public void doesIgnoreSetters() throws Exception {
-    Object object = creator_.createObject(ClassWithSetter.class);
+    Object object = creator_.createObject(new ObjectType(ClassWithSetter.class));
     object.getClass().getDeclaredMethod("getCount");
   }
 

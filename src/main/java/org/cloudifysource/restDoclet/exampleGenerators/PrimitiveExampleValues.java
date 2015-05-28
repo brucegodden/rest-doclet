@@ -27,14 +27,14 @@ public final class PrimitiveExampleValues {
   }
   
   // These gets initialized to their default values
-  private static final boolean DEFAULT_BOOLEAN = true;
-  private static final byte DEFAULT_BYTE = 0;
-  private static final short DEFAULT_SHORT = 0;
-  private static final int DEFAULT_INT = 0;
-  private static final long DEFAULT_LONG = 0;
-  private static final float DEFAULT_FLOAT = 0;
-  private static final double DEFAULT_DOUBLE = 0;
-  private static final char DEFAULT_CHAR = 'a';
+  private static final Boolean DEFAULT_BOOLEAN = true;
+  private static final Byte DEFAULT_BYTE = 1;
+  private static final Short DEFAULT_SHORT = 2;
+  private static final Integer DEFAULT_INT = 3;
+  private static final Long DEFAULT_LONG = 4L;
+  private static final Float DEFAULT_FLOAT = 0.5F;
+  private static final Double DEFAULT_DOUBLE = 0.6D;
+  private static final Character DEFAULT_CHAR = 'a';
   
   /**
    * Returns an example value of a primitive type.

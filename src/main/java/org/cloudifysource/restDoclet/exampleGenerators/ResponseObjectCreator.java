@@ -15,14 +15,14 @@ public class ResponseObjectCreator extends ObjectCreator {
   private static final String[] PREFIXES = {"get", "is"};
 
   @Override
-  protected Map<String, Type> getProperties(final Class cls) {
-    final Map<String, Type> properties = newHashMap();
+  protected Map<String, ObjectType> getProperties(final Class cls) {
+    final Map<String, ObjectType> properties = newHashMap();
 
     for (Method m : cls.getMethods()) {
       if (Modifier.isPublic(m.getModifiers()) && m.getParameterTypes().length == 0 && !OBJECT_METHODS.contains(m.getName())) {
         for (String prefix : PREFIXES) {
           if (m.getName().startsWith(prefix) && m.getName().length() > prefix.length()) {
-            properties.put(uncapitalize(m.getName().substring(prefix.length())), m.getGenericReturnType());
+            properties.put(uncapitalize(m.getName().substring(prefix.length())), new ObjectType(m.getGenericReturnType()));
             break;
           }
         }
