@@ -91,7 +91,7 @@ public class ResponseObjectCreatorTest {
     final Object response = creator_.createObject(new ObjectType(ClassWithEnumField.class));
     final ClassWithEnumField.Status status = (ClassWithEnumField.Status) callMethod(response, "getStatus", ClassWithEnumField.Status.class);
     assertThat(status, notNullValue());
-    assertThat(status, is(ClassWithEnumField.Status.ACTIVATED));
+    assertThat(status, is(ClassWithEnumField.Status.PENDING));
   }
 
   @Test

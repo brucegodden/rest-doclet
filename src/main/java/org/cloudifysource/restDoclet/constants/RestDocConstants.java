@@ -42,9 +42,6 @@ public final class RestDocConstants {
 
   public static final String CONTROLLERS_PACKAGE = "org.cloudifysource.rest.controllers";
 
-  public static final String ADMIN_API_CONTROLLER_CLASS_NAME =
-      "org.cloudifysource.rest.controllers.AdminAPIController";
-
   public static final String VELOCITY_TEMPLATE_PATH_FLAG = "-velocityTemplateFilePath";
 
   public static final String VELOCITY_TEMPLATE_FILE_NAME = "restDocletVelocityTemplate.vm";

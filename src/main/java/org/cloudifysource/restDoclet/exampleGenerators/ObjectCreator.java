@@ -26,7 +26,6 @@ public abstract class ObjectCreator {
   }
 
   private List<ExampleCreator> exampleCreators_;
-  private List<ParametricExampleCreator> paramExampleCreators_;
 
   public static String capitalize(final String name) {
     return name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -39,24 +38,14 @@ public abstract class ObjectCreator {
   public ObjectCreator() {
     exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_,
         dateCreator_, calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_);
-
-    paramExampleCreators_ = newArrayList(listCreator_, setCreator_, mapCreator_);
   }
 
   public Object createObject(final ObjectType objectType) throws Exception {
     final Class clazz = Class.forName(objectType.getQualifiedName());
 
-    if (objectType.isParameterized()) {
-      for (ParametricExampleCreator creator : paramExampleCreators_) {
-        if (creator.match(clazz)) {
-          return creator.create(clazz, objectType.getParameterTypes());
-        }
-      }
-    }
-
     for (ExampleCreator creator : exampleCreators_) {
       if (creator.match(clazz)) {
-        return creator.create(clazz);
+        return creator.create(clazz, objectType);
       }
     }
 
@@ -93,23 +82,20 @@ public abstract class ObjectCreator {
 
   interface ExampleCreator {
     boolean match(Class cls);
-    Object create(Class cls) throws Exception;
-  }
-
-  interface ParametricExampleCreator extends ExampleCreator {
-    Object create(Class cls, ObjectType[] parameters) throws Exception;
+    Object create(Class cls, ObjectType type) throws Exception;
   }
 
   private static ExampleCreator stringCreator_ = new ExampleCreator() {
 
     private List<String> examples_ = newArrayList("foo", "bar", "quux");
+
     @Override
     public boolean match(Class cls) {
       return String.class.isAssignableFrom(cls);
     }
 
     @Override
-    public Object create(final Class cls) {
+    public Object create(final Class cls, final ObjectType type) {
       Collections.rotate(examples_, 1);
       return examples_.get(0);
     }
@@ -122,7 +108,7 @@ public abstract class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) {
+    public Object create(final Class cls, final ObjectType type) {
       return PrimitiveExampleValues.getValue(cls);
     }
   };
@@ -134,7 +120,7 @@ public abstract class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
+    public Object create(final Class cls, final ObjectType type) throws Exception {
       return PrimitiveExampleValues.getValue(Primitives.unwrap(cls));
     }
   };
@@ -147,8 +133,9 @@ public abstract class ObjectCreator {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object create(final Class cls) {
-      return cls.getEnumConstants()[0];
+    public Object create(final Class cls, final ObjectType type) {
+      final Object[] constants = cls.getEnumConstants();
+      return constants[constants.length / 2];
     }
   };
 
@@ -159,7 +146,7 @@ public abstract class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
+    public Object create(final Class cls, final ObjectType type) throws Exception {
       return new Date();
     }
   };
@@ -171,7 +158,7 @@ public abstract class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
+    public Object create(final Class cls, final ObjectType type) throws Exception {
       return Calendar.getInstance();
     }
   };
@@ -183,7 +170,7 @@ public abstract class ObjectCreator {
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
+    public Object create(final Class cls, final ObjectType type) throws Exception {
       final Class componentClass = cls.getComponentType();
       Object array = Array.newInstance(Object.class, 1);
       Array.set(array, 0, createObject(new ObjectType(componentClass)));
@@ -191,60 +178,67 @@ public abstract class ObjectCreator {
     }
   };
 
-  private ParametricExampleCreator listCreator_ = new ParametricExampleCreator() {
+  private ExampleCreator listCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
       return List.class.isAssignableFrom(cls);
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
-      return this.create(cls, new ObjectType[] {new ObjectType(Object.class)});
-    }
+    public Object create(final Class cls, final ObjectType type) throws Exception {
+      ObjectType contentType;
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
-      List list = ImmutableList.of(createObject(parameters[0]));
-      return list;
+      if (type.isParameterized()) {
+        contentType = type.getParameterTypes()[0];
+      }
+      else {
+        contentType = new ObjectType(Object.class);
+      }
+
+      return ImmutableList.of(createObject(contentType));
     }
   };
 
-  private ParametricExampleCreator setCreator_ = new ParametricExampleCreator() {
+  private ExampleCreator setCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
       return Set.class.isAssignableFrom(cls);
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
-      return this.create(cls, new ObjectType[] {new ObjectType(Object.class)});
-    }
+    public Object create(final Class cls, final ObjectType type) throws Exception {
+      ObjectType contentType;
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
-      Set set = ImmutableSet.of(createObject(parameters[0]));
-      return set;
+      if (type.isParameterized()) {
+        contentType = type.getParameterTypes()[0];
+      }
+      else {
+        contentType = new ObjectType(Object.class);
+      }
+
+      return ImmutableSet.of(createObject(contentType));
     }
   };
 
-  private ParametricExampleCreator mapCreator_ = new ParametricExampleCreator() {
+  private ExampleCreator mapCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
       return Map.class.isAssignableFrom(cls);
     }
 
     @Override
-    public Object create(final Class cls) throws Exception {
-      return this.create(cls, new ObjectType[]{new ObjectType(String.class), new ObjectType(String.class)});
-    }
+    public Object create(final Class cls, final ObjectType type) throws Exception {
+      ObjectType keyType, valueType;
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object create(final Class cls, final ObjectType[] parameters) throws Exception {
-      Map map = ImmutableMap.of(createObject(parameters[0]), createObject(parameters[1]));
-      return map;
+      if (type.isParameterized()) {
+        keyType = type.getParameterTypes()[0];
+        valueType = type.getParameterTypes()[1];
+      }
+      else {
+        keyType = valueType = new ObjectType(String.class);
+      }
+
+      return ImmutableMap.of(createObject(keyType), createObject(valueType));
     }
   };
 }

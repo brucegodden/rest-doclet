@@ -50,9 +50,8 @@ public final class Utils {
 	 */
 	protected static boolean filterOutControllerClass(final ClassDoc classDoc, final RestAnnotations annotations) {
     String name = classDoc.qualifiedTypeName();
-		return ((annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.CONTROLLER) == null)
-			&& (annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.REST_CONTROLLER) == null))
-				|| RestDocConstants.ADMIN_API_CONTROLLER_CLASS_NAME.equals(name);
+		return (annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.CONTROLLER) == null)
+			&& (annotations.getAnnotation(RestDocConstants.DocAnnotationTypes.REST_CONTROLLER) == null);
 	}
 
 	@SuppressWarnings("unused")

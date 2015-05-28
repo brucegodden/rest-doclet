@@ -30,6 +30,7 @@ public class ExampleGenerator {
 
         String generateExample = new ObjectMapper()
                 .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
+                .configure(SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY, true)
                 .writeValueAsString(object);
 
         return new DocJsonResponseExample(Utils.getIndentJson(generateExample), "");
@@ -56,6 +57,7 @@ public class ExampleGenerator {
 
         final String generateExample = new ObjectMapper()
             .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false)
+            .configure(SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY, true)
             .writeValueAsString(object);
 
         return new DocJsonRequestExample(Utils.getIndentJson(generateExample), "");
