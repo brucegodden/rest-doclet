@@ -3,9 +3,12 @@ package org.cloudifysource.restDoclet.exampleGenerators;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import org.cloudifysource.restDoclet.annotations.JsonResponseExample;
+import org.codehaus.jackson.node.ObjectNode;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -169,6 +172,16 @@ public class ResponseObjectCreatorTest {
   }
 
   @Test
+  public void canCreateClassWithExampleAnnotation() throws Exception {
+    final Object outer = creator_.createObject(new ObjectType(ClassWithResponseExample.class));
+    final Object inner = callMethod(outer, "getExample", Object.class);
+    assertThat(inner, notNullValue());
+    assertThat(inner, instanceOf(ObjectNode.class));
+    assertThat(((ObjectNode) inner).get("count"), nullValue());
+    assertThat(((ObjectNode) inner).get("override").asText(), is("true"));
+  }
+
+  @Test
   public void canCreateATopLevelList() throws Exception {
     final List<String> stringList = newArrayList();
     final Object listObject = creator_.createObject(new ObjectType(stringList.getClass()));
@@ -212,10 +225,8 @@ public class ResponseObjectCreatorTest {
   }
 
   static class ClassWithAnAbstractClassInside {
-    private AbstractClass abstractClass_;
-
     public AbstractClass getTheAbstractClass() {
-      return abstractClass_;
+      return null;
     }
   }
 
@@ -224,55 +235,42 @@ public class ResponseObjectCreatorTest {
   }
 
   static abstract class AbstractClass {
-    private String bar_;
-
     public abstract String getFoo();
   }
 
   static class Fish {
-    private String name_;
-    private long count_;
-    private boolean saltwater_;
-    private Integer temp_;
-
     public String getName() {
-      return name_;
+      return null;
     }
 
     public long getCount() {
-      return count_;
+      return 0;
     }
 
     public boolean isSaltwater() {
-      return saltwater_;
+      return false;
     }
 
     public Integer getTemp() {
-      return temp_;
+      return 0;
     }
   }
 
   static class FishBowl {
-    private Fish fish_;
-
     public Fish getFish() {
-      return fish_;
+      return null;
     }
   }
 
   static class Aquarium {
-    private List<Fish> fishes_;
-
     public List<Fish> getFishes() {
-      return fishes_;
+      return null;
     }
   }
 
   static class SeaWorld {
-    private List<Aquarium> aquariums_;
-
     public List<Aquarium> getAquariums()  {
-      return aquariums_;
+      return null;
     }
   }
 
@@ -282,54 +280,55 @@ public class ResponseObjectCreatorTest {
       PENDING
     }
 
-    private Status status_;
-
     public Status getStatus() {
-      return status_;
+      return null;
     }
   }
 
   static class ClassWithDate {
-    private Date date_;
-
     public Date getDate() {
-      return date_;
+      return null;
     }
   }
 
   static class ClassWithCalendar {
-    private Calendar calendar_;
-
     public Calendar getCalendar() {
-      return calendar_;
+      return null;
     }
   }
 
   static class ClassWithMap {
-    Map<Long, String> hashMap_ ;
-
     public Map<Long, String> getMap() {
-      return hashMap_;
+      return null;
     }
   }
 
   static class ClassWithSet {
-    Set<String> hashSet_;
-
     public Set<String> getSet() {
-      return hashSet_;
+      return null;
     }
   }
 
   static class ClassWithNestedInnerClass {
-    private Inner inner_;
-
     public Inner getInner() {
-      return inner_;
+      return null;
     }
 
     class Inner {
       public Integer getCount() {
+        return 0;
+      }
+    }
+  }
+
+  static class ClassWithResponseExample {
+    public Example getExample() {
+      return null;
+    }
+
+    @JsonResponseExample(responseBody = "{\"override\": true}")
+    static class Example {
+      public int getCount() {
         return 0;
       }
     }
