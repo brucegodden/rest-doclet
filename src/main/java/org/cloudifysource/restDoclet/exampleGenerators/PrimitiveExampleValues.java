@@ -32,8 +32,8 @@ public final class PrimitiveExampleValues {
   private static final Short DEFAULT_SHORT = 2;
   private static final Integer DEFAULT_INT = 3;
   private static final Long DEFAULT_LONG = 4L;
-  private static final Float DEFAULT_FLOAT = 5.0F;
-  private static final Double DEFAULT_DOUBLE = 6.0D;
+  private static final Float DEFAULT_FLOAT = 0.5F;
+  private static final Double DEFAULT_DOUBLE = 0.6D;
   private static final Character DEFAULT_CHAR = 'a';
   
   /**

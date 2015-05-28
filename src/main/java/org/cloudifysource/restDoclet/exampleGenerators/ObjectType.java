@@ -11,13 +11,13 @@ public class ObjectType {
 
   private final static Map<Class, Class> PRIMITIVE_WRAPPERS = newHashMap();
   static {
+    PRIMITIVE_WRAPPERS.put(boolean.class, Boolean.class);
     PRIMITIVE_WRAPPERS.put(byte.class, Byte.class);
     PRIMITIVE_WRAPPERS.put(short.class, Short.class);
     PRIMITIVE_WRAPPERS.put(int.class, Integer.class);
     PRIMITIVE_WRAPPERS.put(long.class, Long.class);
     PRIMITIVE_WRAPPERS.put(float.class, Float.class);
     PRIMITIVE_WRAPPERS.put(double.class, Double.class);
-    PRIMITIVE_WRAPPERS.put(boolean.class, Boolean.class);
     PRIMITIVE_WRAPPERS.put(char.class, Character.class);
   }
 
