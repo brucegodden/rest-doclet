@@ -3,15 +3,14 @@ package org.cloudifysource.restDoclet.exampleGenerators;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import org.cloudifysource.restDoclet.annotations.JsonResponseExample;
+import org.codehaus.jackson.node.ObjectNode;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import static com.google.common.collect.Lists.newArrayList;
@@ -166,6 +165,14 @@ public class RequestObjectCreatorTest {
   }
 
   @Test
+  public void doesNotCreateClassWithResponseExampleAnnotation() throws Exception {
+    final Object outer = creator_.createObject(new ObjectType(ClassWithResponseExample.class));
+    final Object inner = callMethod(outer, "getExample", Object.class);
+    assertThat(inner, notNullValue());
+    assertHasMethod(inner, "getCount");
+  }
+
+  @Test
   public void canCreateATopLevelList() throws Exception {
     final List<String> stringList = newArrayList();
     final Object listObject = creator_.createObject(new ObjectType(stringList.getClass()));
@@ -310,6 +317,17 @@ public class RequestObjectCreatorTest {
 
     class Inner {
       public void setCount(Integer count) {
+      }
+    }
+  }
+
+  static class ClassWithResponseExample {
+    public void setExample(Example example) {
+    }
+
+    @JsonResponseExample(responseBody = "{\"override\": true}")
+    static class Example {
+      public void setCount(int count) {
       }
     }
   }

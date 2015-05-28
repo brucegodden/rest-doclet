@@ -35,9 +35,10 @@ public abstract class ObjectCreator {
     return name.substring(0, 1).toLowerCase() + name.substring(1);
   }
 
-  public ObjectCreator() {
-    exampleCreators_ = newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_, enumCreator_,
-        dateCreator_, calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_);
+  public ObjectCreator(ExampleCreator... creators) {
+    exampleCreators_ = newArrayList(creators);
+    exampleCreators_.addAll(newArrayList(primitiveCreator_, wrapperCreator_, stringCreator_,
+        enumCreator_, dateCreator_, calendarCreator_, arrayCreator_, listCreator_, setCreator_, mapCreator_));
   }
 
   public Object createObject(final ObjectType objectType) throws Exception {
@@ -139,7 +140,7 @@ public abstract class ObjectCreator {
     }
   };
 
-  private ExampleCreator dateCreator_ = new ExampleCreator() {
+  private static ExampleCreator dateCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
       return Date.class.isAssignableFrom(cls);
@@ -151,7 +152,7 @@ public abstract class ObjectCreator {
     }
   };
 
-  private ExampleCreator calendarCreator_ = new ExampleCreator() {
+  private static ExampleCreator calendarCreator_ = new ExampleCreator() {
     @Override
     public boolean match(final Class cls) {
       return Calendar.class.isAssignableFrom(cls);
