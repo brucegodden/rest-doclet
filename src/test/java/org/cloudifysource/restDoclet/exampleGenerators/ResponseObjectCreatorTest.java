@@ -13,6 +13,9 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 
@@ -182,37 +185,60 @@ public class ResponseObjectCreatorTest {
   }
 
   @Test
+  public void canCreateFieldWithJsonPropertyAnnotation() throws Exception {
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
+    assertDoesNotHaveMethod(fish, "getConsumable");
+    assertHasMethod(fish, "getFood");
+  }
+
+  @Test
+  public void doesNotCreateFieldWithJsonIgnoreAnnotation() throws Exception {
+    final Object fish = creator_.createObject(new ObjectType(Fish.class));
+    assertDoesNotHaveMethod(fish, "getFriable");
+  }
+
+  @Test
   public void canCreateATopLevelList() throws Exception {
     final List<String> stringList = newArrayList();
     final Object listObject = creator_.createObject(new ObjectType(stringList.getClass()));
     assertThat(listObject, instanceOf(List.class));
   }
 
-  @Test(expected = NoSuchMethodException.class)
+  @Test
   public void doesIgnoreSetters() throws Exception {
     Object object = creator_.createObject(new ObjectType(ClassWithSetter.class));
-    object.getClass().getDeclaredMethod("getCount");
+    assertDoesNotHaveMethod(object, "getCount");
   }
 
-  private void assertHasMethod(final Object getterObject, final String methodName) throws Exception {
-    assertHasMethod(getterObject, methodName, false);
-  }
-
-  private Object callMethod(final Object getterObject, final String methodName, final Class clazz) throws Exception {
-    final Object object = assertHasMethod(getterObject, methodName, true);
-    if (object != null) {
-      assertThat("Wrong type object returned from " + methodName + "() method", clazz.isAssignableFrom(object.getClass()));
-    }
-    return object;
-  }
-
-  private Object assertHasMethod(final Object getterObject, final String methodName, final boolean fetch) throws Exception {
+  private void assertDoesNotHaveMethod(final Object getterObject, final String methodName) throws Exception {
     try {
-      assertThat(getterObject, notNullValue());
-      Method method = getterObject.getClass().getDeclaredMethod(methodName);
+      getterObject.getClass().getDeclaredMethod(methodName);
+      assertThat("Method " + methodName + "() should not exist", false);
+    }
+    catch (NoSuchMethodException e) {
+      // Ignore expected exception
+    }
+  }
+
+  private void assertHasMethod(final Object object, final String methodName) throws Exception {
+    methodInner(object, methodName, false);
+  }
+
+  private Object callMethod(final Object object, final String methodName, final Class clazz) throws Exception {
+    final Object result = methodInner(object, methodName, true);
+    if (result != null) {
+      assertThat("Wrong type object returned from " + methodName + "() method", clazz.isAssignableFrom(result.getClass()));
+    }
+    return result;
+  }
+
+  private Object methodInner(final Object object, final String methodName, final boolean fetch) throws Exception {
+    try {
+      assertThat(object, notNullValue());
+      Method method = object.getClass().getDeclaredMethod(methodName);
       assertThat("Wrong return type from " + methodName + "() method", method.getReturnType().equals(Object.class));
       if (fetch) {
-        return method.invoke(getterObject);
+        return method.invoke(object);
       }
     } catch (NoSuchMethodException e) {
       assertThat("No " + methodName + "() method defined", false);
@@ -253,6 +279,16 @@ public class ResponseObjectCreatorTest {
 
     public Integer getTemp() {
       return 0;
+    }
+
+    @JsonProperty("food")
+    public String getConsumable() {
+      return null;
+    }
+
+    @JsonIgnore
+    public boolean getFriable() {
+      return false;
     }
   }
 
