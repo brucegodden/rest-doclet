@@ -8,6 +8,9 @@ import java.util.logging.Logger;
 import org.cloudifysource.restDoclet.annotations.JsonResponseExample;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import static com.google.common.collect.Maps.newHashMap;
 
 public class ResponseObjectCreator extends ObjectCreator {
@@ -25,10 +28,22 @@ public class ResponseObjectCreator extends ObjectCreator {
     final Map<String, ObjectType> properties = newHashMap();
 
     for (Method m : cls.getMethods()) {
-      if (Modifier.isPublic(m.getModifiers()) && m.getParameterTypes().length == 0 && !OBJECT_METHODS.contains(m.getName())) {
+      if (Modifier.isPublic(m.getModifiers())
+          && m.getParameterTypes().length == 0
+          && m.getAnnotation(JsonIgnore.class) == null
+          &&!OBJECT_METHODS.contains(m.getName())) {
         for (String prefix : PREFIXES) {
-          if (m.getName().startsWith(prefix) && m.getName().length() > prefix.length()) {
-            properties.put(uncapitalize(m.getName().substring(prefix.length())), new ObjectType(m.getGenericReturnType()));
+          if (m.getName().startsWith(prefix)
+              && m.getName().length() > prefix.length()) {
+            String name;
+            final JsonProperty annotation = m.getAnnotation(JsonProperty.class);
+            if (annotation != null) {
+              name = annotation.value();
+            }
+            else {
+              name = m.getName().substring(prefix.length());
+            }
+            properties.put(uncapitalize(name), new ObjectType(m.getGenericReturnType()));
             break;
           }
         }

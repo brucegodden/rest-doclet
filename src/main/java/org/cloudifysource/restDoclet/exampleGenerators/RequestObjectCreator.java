@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static com.google.common.collect.Maps.newHashMap;
@@ -40,8 +41,17 @@ public class RequestObjectCreator extends ObjectCreator {
             && m.getName().startsWith("set")
             && m.getName().length() > 3
             && m.getParameterTypes().length == 1
+            && m.getAnnotation(JsonIgnore.class) == null
             && !OBJECT_METHODS.contains(m.getName())) {
-          properties.put(uncapitalize(m.getName().substring(3)), new ObjectType(m.getGenericParameterTypes()[0]));
+          final String name;
+          final JsonProperty annotation = m.getAnnotation(JsonProperty.class);
+          if (annotation != null) {
+            name = annotation.value();
+          }
+          else {
+            name = m.getName().substring(3);
+          }
+          properties.put(uncapitalize(name), new ObjectType(m.getGenericParameterTypes()[0]));
         }
       }
     }
